@@ -45,8 +45,6 @@ dependencies {
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.3.2'
-//    implementation 'tk.mallumo:kdb:0.0.1'
-//    implementation 'tk.mallumo:kdb-android:0.0.1'
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'com.google.android.material:material:1.2.1'
     testImplementation 'junit:junit:4.+'
@@ -59,8 +57,18 @@ dependencies {
     ksp project(":kdb-ksp")
     implementation project(":kdb")
 }
-ksp {
-    arg("KdbSrcOut", "${projectDir.absolutePath}/src/main/ksp")
-    arg("KdbMode", "ANDROID")
+dependencies{
+    implementation 'tk.mallumo:kdb:0.0.1'
+    implementation 'tk.mallumo:kdb-android:0.0.1'
+//    ksp project(":kdb-ksp")
+//    implementation project(":kdb")
 }
-android.sourceSets.main.java.srcDirs += ['src/main/ksp']
+apply from: "../ksp-kdb-android.gradle"
+apply from: "../ksp-config.gradle"
+
+
+//ksp {
+//    arg("KdbSrcOut", "${projectDir.absolutePath}/src/main/ksp")
+//    arg("KdbMode", "ANDROID")
+//}
+//android.sourceSets.main.java.srcDirs += ['src/main/ksp']

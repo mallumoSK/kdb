@@ -1,0 +1,4 @@
+ksp {
+    arg("KdbSrcOut", "${projectDir.absolutePath}/src/main/ksp")
+    arg("KdbMode", "JVM-DESKTOP")
+}
