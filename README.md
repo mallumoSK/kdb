@@ -1,4 +1,8 @@
 # kdb
+
+![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb%2Fmaven-metadata.xml&style=for-the-badge "Version")
+
+
 * sqlite wrapper for desktop and mobile
 * Similiar to [ROOM](https://developer.android.com/jetpack/androidx/releases/room?hl=en) **BUT**
   * faster compilation time
@@ -111,8 +115,8 @@ apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-androi
 apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-jvm_desktop.gradle'
 
 dependencies {
-    implementation 'tk.mallumo:kdb:0.0.1'
-    ksp implementation("tk.mallumo:kdb:x.y.z")
+    implementation "tk.mallumo:kdb:0.0.1"
+    ksp "tk.mallumo:kdb:x.y.z"
 }
 ```
 
