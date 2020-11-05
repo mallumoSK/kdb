@@ -57,7 +57,7 @@ import tk.mallumo.kdb.KdbQI
 open class BindingTEST_TABLE(var x: Double = 1.3):TEST_TABLE()
 
 @KdbQI
-open class BindingTEST(var xyz: Int = 0)
+open class BindingTEST(var xyz: String = "")
 ```
 
 ### Instance of database
