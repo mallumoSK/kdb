@@ -16,7 +16,8 @@
 * fast
 * can be used for android and jvm-desktop in future ios too
 * direct work with objects
-* automatic generating extension function of (query, insert, update, delete)
+* automatic generating suspend extension function of (query, insert, update, delete)
+* all functions work on ``Dispatchers.IO`` and synchronized by kotlinx.coroutines.sync.Mutex
 * **automatic database changes without programmer interaction:**
   * add table
   * add/remove column
