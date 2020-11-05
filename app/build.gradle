@@ -31,6 +31,10 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+//    packagingOptions {
+//        exclude 'META-INF/DEPENDENCIES'
+//        exclude 'META-INF/*.kotlin_module'
+//    }
 }
 
 repositories {
@@ -54,12 +58,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.2.0")
     implementation "tk.mallumo:log:8.3.0"
     implementation 'com.google.code.gson:gson:2.8.6'
-    ksp project(":kdb-ksp")
-    implementation project(":kdb")
 }
 dependencies{
     implementation 'tk.mallumo:kdb:0.0.1'
-    implementation 'tk.mallumo:kdb-android:0.0.1'
+    ksp "tk.mallumo:kdb-ksp:0.0.1"
 //    ksp project(":kdb-ksp")
 //    implementation project(":kdb")
 }
