@@ -117,7 +117,7 @@ apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-jvm_de
 
 dependencies {
     implementation "tk.mallumo:kdb:x.y.z"
-    ksp "tk.mallumo:kdb:x.y.z"
+    ksp "tk.mallumo:kdb-ksp:x.y.z"
 }
 ```
 
