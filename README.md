@@ -116,7 +116,7 @@ apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-androi
 apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-jvm_desktop.gradle'
 
 dependencies {
-    implementation "tk.mallumo:kdb:0.0.1"
+    implementation "tk.mallumo:kdb:x.y.z"
     ksp "tk.mallumo:kdb:x.y.z"
 }
 ```
