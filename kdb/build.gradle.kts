@@ -7,14 +7,14 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "0.0.1"
+version = "0.0.2"
 
 android {
     compileSdkVersion(30)
     buildToolsVersion = "30.0.1"
 
     defaultConfig {
-        minSdkVersion(25)
+        minSdkVersion(23)
         targetSdkVersion(30)
     }
     sourceSets {
