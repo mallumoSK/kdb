@@ -34,12 +34,9 @@ internal object DbRecreatingFunctions {
                 newDef.sqlCreator(redeclareType = false, isSqlite = true).forEach {
                     db.exec(it)
                 }
-
-
                 newDef.applyIndexes().forEach {
                     db.exec(it)
                 }
-//                log("${newDef.name}")
                 writeChanges = true
             } else {
                 var redeclareTable = newDef.getUnique().toString() != oldDef.getUnique().toString()
