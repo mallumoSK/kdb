@@ -1,7 +1,7 @@
 package tk.mallumo.kdb.ksp
 
 
-import org.jetbrains.kotlin.ksp.symbol.KSPropertyDeclaration
+import com.google.devtools.ksp.symbol.KSPropertyDeclaration
 import java.util.*
 
 /**
@@ -40,8 +40,8 @@ data class PropertyTypeHolder(
         fun get(prop: KSPropertyDeclaration): PropertyTypeHolder? {
 
             val name = prop.simpleName.asString()
-            val declaration = prop.type?.resolve()?.declaration
-            val typeName = declaration?.qualifiedName?.asString() ?: return null
+            val declaration = prop.type.resolve().declaration
+            val typeName = declaration.qualifiedName?.asString() ?: return null
             val cursorTypeName = typeName
                 .split(".")[1]
                 .toLowerCase(Locale.ROOT)

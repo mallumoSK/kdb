@@ -7,10 +7,10 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "0.0.1"
+version = "0.1.0"
 
 dependencies {
-    api("org.jetbrains.kotlin:kotlin-symbol-processing-api:1.4.0-dev-experimental-20200914")
+    api("com.google.devtools.ksp:symbol-processing:1.4.20-dev-experimental-20201222")
 }
 
 
@@ -20,14 +20,3 @@ tasks.withType<KotlinCompile> {
     }
 }
 apply("../secure-ksp.gradle")
-
-//configure<PublishingExtension> {
-//    repositories {
-//        maven("/tmp/___/")
-//    }
-//    publications {
-//        register("mavenJava", MavenPublication::class) {
-//            from(components["java"])
-//        }
-//    }
-//}

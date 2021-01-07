@@ -1,13 +1,11 @@
 package tk.mallumo.kdb.ksp
 
-import org.jetbrains.kotlin.ksp.getAllSuperTypes
-import org.jetbrains.kotlin.ksp.getDeclaredProperties
-import org.jetbrains.kotlin.ksp.isAbstract
-import org.jetbrains.kotlin.ksp.processing.CodeGenerator
-import org.jetbrains.kotlin.ksp.processing.KSPLogger
-import org.jetbrains.kotlin.ksp.processing.Resolver
-import org.jetbrains.kotlin.ksp.processing.SymbolProcessor
-import org.jetbrains.kotlin.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.symbol.KSClassDeclaration
+import tk.mallumo.kdb.ksp.HashUtils.sha1
 import java.io.File
 
 
@@ -48,51 +46,45 @@ class KdbProcessor : SymbolProcessor {
     override fun process(resolver: Resolver) {
         val tablesArr = buildDeclarationMap(resolver, "tk.mallumo.kdb.KdbTable")
         val queryInsertArr = buildDeclarationMap(resolver, "tk.mallumo.kdb.KdbQI")
-        val all = hashMapOf<KSClassDeclaration, Sequence<PropertyTypeHolder>>().apply {
-            putAll(tablesArr)
-            putAll(queryInsertArr)
+        val all = arrayListOf<TableNode>().apply {
+            addAll(tablesArr)
+            addAll(queryInsertArr)
         }
 
         if (all.isEmpty()) return
 
-        generateCreator(codeWriter, mode)
-        generateDefStructure(codeWriter, tablesArr)
+        val hash = all.joinToString("\n") { it.toString().sha1() }
+        if (hash != codeWriter.readTmpFile("hash.tmp")) {
+            generateCreator(codeWriter, mode)
+            generateDefStructure(codeWriter, tablesArr)
+//
+            generateIndexFunctions(codeWriter, all)
+            generateFillFunctions(codeWriter, all)
+            generateCursorFunctions(codeWriter, all)
+            generateInsertFunctions(codeWriter, tablesArr)
+//
+            generateExtCursorFunctions(codeWriter, all)
+            generateExtInsertFunctions(codeWriter, tablesArr)
+            generateExtUpdateFunctions(codeWriter, tablesArr)
+            generateExtDeleteFunctions(codeWriter, tablesArr)
 
-        generateIndexFunctions(codeWriter, all)
-        generateFillFunctions(codeWriter, all)
-        generateCursorFunctions(codeWriter, all)
-        generateInsertFunctions(codeWriter, tablesArr)
+            write(hash)
+        }
 
-        generateExtCursorFunctions(codeWriter, all)
-        generateExtInsertFunctions(codeWriter, tablesArr)
-        generateExtUpdateFunctions(codeWriter, tablesArr)
-        generateExtDeleteFunctions(codeWriter, tablesArr)
     }
-
 
     private fun buildDeclarationMap(resolver: Resolver, annotationClass: String) =
         resolver.getSymbolsWithAnnotation(annotationClass) // symbols with annotation
             .filterIsInstance<KSClassDeclaration>() // only usable classes
-            .associateBy({ it }, { current -> // map all properties to annotated class
-                current.getAllSuperTypes() // find parents of annotated class
-                    .map { it.declaration }
-                    .filterIsInstance<KSClassDeclaration>()
-                    .plusElement(current)
-                    .map { property ->
-                        property.getDeclaredProperties() // find all properties of class
-                            .asSequence()
-                            .filter { !it.isAbstract() }
-                            .filter { it.getter != null }
-                            .filter { it.setter != null }
-                            .filter { it.extensionReceiver == null }
-                            .map { PropertyTypeHolder.get(it) } // get only usable properties
-                            .filterNotNull()
-                    }
-                    .flatten()
-            })
+            .map { TableNode(it) }
+
+    private fun write(hash: String) {
+        codeWriter.write(deleteOld = true)
+        codeWriter.writeTmpFile("hash.tmp", hash)
+    }
 
 
     override fun finish() {
-        codeWriter.write(false)
     }
 }
+

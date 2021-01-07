@@ -3,6 +3,7 @@
 package tk.mallumo.kdb.ksp
 
 import java.io.File
+import java.security.MessageDigest
 
 /**
  * Class provides writing generated classes,logs, ... into files
@@ -45,8 +46,7 @@ class CodeWriter(
         val packageName: String,
         val fileName: String,
         val builder: StringBuilder = StringBuilder(),
-        val imports: HashSet<String> = hashSetOf(),
-        var suppress: HashSet<String> = hashSetOf("unused"),
+        val imports: HashSet<String> = hashSetOf()
     ) {
 
         /**
@@ -69,20 +69,27 @@ class CodeWriter(
          * @see BuilderEntry.file
          */
         fun write(kspDir: File) {
-            file(kspDir).writeText(fileSource)
+            val hash = hashString(fileSource)
+            file(kspDir).apply {
+                if (!exists() || readLine() != "//HASH $hash") {
+                    writeText("//HASH ${hash}\n\n${fileSource}")
+                }
+            }
+
         }
+
+        private fun hashString(input: String, type: String = "SHA-1") =
+            MessageDigest
+                .getInstance(type)
+                .digest(input.toByteArray())
+                .map { String.format("%02X", it) }
+                .joinToString(separator = "")
 
         /**
          * Join whole sources into one string
          */
         val fileSource: String
-            get() = """@file:Suppress(${
-                suppress.joinToString(
-                    prefix = "\"",
-                    separator = "\", \"",
-                    postfix = "\""
-                )
-            })
+            get() = """@file:Suppress("unused")
                 
 package $packageName
 
@@ -120,17 +127,24 @@ $builder"""
         packageName: String,
         fileName: String,
         imports: List<String> = listOf(),
-        suppress: List<String> = listOf(),
         body: StringBuilder.() -> Unit
     ) {
         with(getBuilderEntry(packageName, fileName)) {
             this.imports.addAll(imports)
-            this.suppress.addAll(suppress)
             body(builder)
         }
 
     }
 
+    private val libDirectory
+        get() = File(
+            "${directory.absolutePath}/${
+                rootPackage.replace(
+                    ".",
+                    "/"
+                )
+            }"
+        )
     /**
      * This function must be called after all code is generated and ready for writing,
      *
@@ -140,7 +154,6 @@ $builder"""
      * * write new files
      */
     fun write(deleteOld: Boolean) {
-        val libDirectory = File("${directory.absolutePath}/${rootPackage.replace(".", "/")}")
         val oldFiles = libDirectory.walkTopDown().filter { it.isFile }.toList()
         val generated = builders.values.map { it.values }.flatten()
         val newFile = generated.map { it.file(directory) }
@@ -153,5 +166,20 @@ $builder"""
         generated.forEach { entry ->
             entry.write(directory)
         }
+    }
+
+    fun writeTmpFile(name: String, body: String) {
+        File(libDirectory, name).writeText(body)
+    }
+
+    fun readTmpFile(name: String): String = try {
+        File(libDirectory, name).readText()
+    } catch (e: Exception) {
+        ""
+    }
+
+    fun filesInDirectory(): List<File> {
+        return File("${directory.absolutePath}/${rootPackage.replace(".", "/")}")
+            .listFiles()?.toList() ?: listOf()
     }
 }

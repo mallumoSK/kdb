@@ -1,31 +1,6 @@
 package tk.mallumo.kdb.ksp
 
-import org.jetbrains.kotlin.ksp.symbol.KSClassDeclaration
 import java.util.*
-
-private val KSClassDeclaration.functionName: String
-    get() = qualifiedName!!.asString().replace(".", "_")
-
-val KSClassDeclaration.niceClassName: String
-    get() = simpleName.asString().split("_")
-        .map { part ->
-            var joined = ""
-            part.forEachIndexed { index, c ->
-                when {
-                    index == 0 -> {
-                        joined += c.toLowerCase()
-                    }
-                    part.lastIndex == index -> {
-                        joined += c.toLowerCase()
-                    }
-                    c.isLowerCase() && part[index + 1].isUpperCase() -> {
-                        joined += "${c}_"
-                    }
-                    else -> joined += c.toLowerCase()
-                }
-            }
-            joined
-        }.joinToString("_")
 
 object KdbMode {
     const val ANDROID = "ANDROID"
@@ -68,30 +43,30 @@ fun createKDB(name:String, isDebug: Boolean = true, connectionCallback:() -> jav
 
 fun generateDefStructure(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbGeneratedDefStructure.kt",
-        suppress = listOf("RemoveRedundantQualifierName", "SpellCheckingInspection")
+//        suppress = listOf("RemoveRedundantQualifierName", "SpellCheckingInspection")
     ) {
         append("object KdbGeneratedDefStructure{\n")
 
         val tables =
-            map.keys.joinToString(separator = ",\n", prefix = "arrayListOf(", postfix = ")") {
-                "getTableDefItem(${it.qualifiedName!!.asString()}())"
+            map.joinToString(separator = ",\n", prefix = "arrayListOf(", postfix = ")") {
+                "getTableDefItem(${it.qualifiedName}())"
             }
         append("\n\tfun getTablesDef(): ArrayList<ImplKdbTableDef> = $tables\n")
 
-        map.entries.forEach { entry ->
-            val columns = entry.value.map {
-                "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.toUpperCase(Locale.ROOT)}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex})"
+        map.forEach { entry ->
+            val columns = entry.property.map {
+                "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.toUpperCase(Locale.ENGLISH)}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex})"
             }.joinToString(",\n", prefix = "arrayListOf(\n", postfix = ")")
 
             append(
                 """
-    private fun getTableDefItem(instance: ${entry.key.qualifiedName!!.asString()}): ImplKdbTableDef = ImplKdbTableDef(
-            "${entry.key.simpleName.asString().toUpperCase(Locale.ROOT)}",
+    private fun getTableDefItem(instance: ${entry.qualifiedName}): ImplKdbTableDef = ImplKdbTableDef(
+            "${entry.simpleName}",
             $columns
     )
 """
@@ -103,7 +78,7 @@ fun generateDefStructure(
 
 fun generateIndexFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
@@ -112,25 +87,25 @@ fun generateIndexFunctions(
             "tk.mallumo.kdb.sqlite.Cursor",
             "java.util.Locale"
         ),
-        suppress = listOf("FunctionName", "SpellCheckingInspection")
+//        suppress = listOf("FunctionName", "SpellCheckingInspection")
     ) {
         append("object KdbGeneratedIndex{\n")
 
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
 
-            val queryColumns = entry.value
-                .map { "\t\t\tcolumns.indexOf(\"${it.propertyName.toUpperCase(java.util.Locale.getDefault())}\")" }
-                .joinToString(",\n", prefix = "intArrayOf(\n", postfix = ")")
+            val queryColumns = entry.property
+                .joinToString(",\n", prefix = "intArrayOf(\n", postfix = ")") {
+                    "\t\t\tcolumns.indexOf(\"${it.propertyName.toUpperCase(Locale.ENGLISH)}\")"
+                }
             append(
                 """
-    fun index_${entry.key.functionName}(cursor: Cursor): IntArray {
+    fun index_${entry.functionName}(cursor: Cursor): IntArray {
         val columns = cursor.columns.map { it.toUpperCase(Locale.ROOT) }
         return $queryColumns
     }
 """
             )
         }
-
         append("}")
     }
 
@@ -138,18 +113,18 @@ fun generateIndexFunctions(
 
 fun generateFillFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbGeneratedFill.kt",
-        suppress = listOf("FunctionName", "RemoveRedundantQualifierName", "SpellCheckingInspection")
+//        suppress = listOf("FunctionName", "RemoveRedundantQualifierName", "SpellCheckingInspection")
     ) {
         append("object KdbGeneratedFill{\n")
 
 
-        map.entries.forEach { entry ->
-            val mapping = entry.value.mapIndexed { index, property ->
+        map.forEach { entry ->
+            val mapping = entry.property.mapIndexed { index, property ->
                 when (property.qualifiedName) {
                     "kotlin.String" -> "\t\t\tif (indexArray[$index] != -1) cursor.string(indexArray[$index]) { ${property.propertyName} = it }"
                     "kotlin.Int" -> "\t\t\tif (indexArray[$index] != -1) cursor.int(indexArray[$index]) { ${property.propertyName} = it }"
@@ -162,7 +137,7 @@ fun generateFillFunctions(
 
             append(
                 """
-    fun fill_${entry.key.functionName}(item:${entry.key.qualifiedName!!.asString()}, cursor: tk.mallumo.kdb.sqlite.Cursor, indexArray: IntArray) {
+    fun fill_${entry.functionName}(item:${entry.qualifiedName}, cursor: tk.mallumo.kdb.sqlite.Cursor, indexArray: IntArray) {
         item.apply {
 $mapping
         }
@@ -179,26 +154,26 @@ $mapping
 
 fun generateCursorFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbGeneratedQuery.kt",
-        suppress = listOf("FunctionName", "RemoveRedundantQualifierName", "SpellCheckingInspection")
+//        suppress = listOf("FunctionName", "RemoveRedundantQualifierName", "SpellCheckingInspection")
     ) {
         append("object KdbGeneratedQuery{\n")
 
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
 
             append(
                 """
-    fun query_${entry.key.functionName}(cursor: tk.mallumo.kdb.sqlite.Cursor): ArrayList<${entry.key.qualifiedName!!.asString()}> {
-        val out = arrayListOf<${entry.key.qualifiedName!!.asString()}>()
+    fun query_${entry.functionName}(cursor: tk.mallumo.kdb.sqlite.Cursor): ArrayList<${entry.qualifiedName}> {
+        val out = arrayListOf<${entry.qualifiedName}>()
         if (cursor.columns.isNotEmpty()) {
-            val indexArray = KdbGeneratedIndex.index_${entry.key.functionName}(cursor)
+            val indexArray = KdbGeneratedIndex.index_${entry.functionName}(cursor)
             while (cursor.next()) {
-                out.add(${entry.key.qualifiedName!!.asString()}().apply {
-                   KdbGeneratedFill.fill_${entry.key.functionName}(this, cursor, indexArray)
+                out.add(${entry.qualifiedName}().apply {
+                   KdbGeneratedFill.fill_${entry.functionName}(this, cursor, indexArray)
                 })
             }
         }
@@ -214,7 +189,7 @@ fun generateCursorFunctions(
 
 fun generateInsertFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
@@ -222,19 +197,19 @@ fun generateInsertFunctions(
         imports = listOf(
             "tk.mallumo.kdb.sqlite.SqliteDB"
         ),
-        suppress = listOf("FunctionName", "RemoveRedundantQualifierName", "SpellCheckingInspection")
+//        suppress = listOf("FunctionName", "RemoveRedundantQualifierName", "SpellCheckingInspection")
     ) {
         append("object KdbGeneratedInsert{\n")
 
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
 
-            val comumns = entry.value.map { "`${it.propertyName.toUpperCase(Locale.ROOT)}`" }
+            val comumns = entry.property.map { "`${it.propertyName.toUpperCase(Locale.ENGLISH)}`" }
                 .joinToString(",", prefix = "(", postfix = ")")
 
-            val values = entry.value.map { "?" }
+            val values = entry.property.map { "?" }
                 .joinToString(",", prefix = "(", postfix = ")")
 
-            val insertVal = entry.value.mapIndexed { index, prop ->
+            val insertVal = entry.property.mapIndexed { index, prop ->
                 when {
                     prop.qualifiedName == "kotlin.Float" -> {
                         "\t\t\t\t\tit.${prop.cursorTypeName}($index) { item.${prop.propertyName}.toDouble() }"
@@ -249,11 +224,11 @@ fun generateInsertFunctions(
             }.joinToString("\n", prefix = "\n", postfix = "\n")
 
             val insert = """"INSERT INTO ${
-                entry.key.simpleName.asString().toUpperCase(Locale.ROOT)
+                entry.simpleName
             } $comumns VALUES $values""""
             append(
                 """
-    fun insert_${entry.key.functionName}(items: Array<${entry.key.qualifiedName!!.asString()}>, db: SqliteDB){
+    fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: SqliteDB){
         if (items.isEmpty()) return
     
         db.insert(${insert}) {
@@ -274,22 +249,22 @@ $insertVal
 
 fun generateExtCursorFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbExtGeneratedQuery.kt",
-        suppress = listOf("RemoveRedundantQualifierName", "FunctionName")
+//        suppress = listOf("RemoveRedundantQualifierName", "FunctionName")
     ) {
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
 
             append(
                 """
-suspend fun ImplKdbCommand.Query.${entry.key.niceClassName}(query: String, params: Map<String, Any?> = mapOf()): ArrayList<${entry.key.qualifiedName!!.asString()}> {
-    var resp = arrayListOf<${entry.key.qualifiedName!!.asString()}>()
+suspend fun ImplKdbCommand.Query.${entry.niceClassName}(query: String, params: Map<String, Any?> = mapOf()): ArrayList<${entry.qualifiedName}> {
+    var resp = arrayListOf<${entry.qualifiedName}>()
     kdb.connection {
         db.query(ImplKdbUtilsFunctions.mapQueryParams(query, params)) { cursor ->
-            resp = KdbGeneratedQuery.query_${entry.key.functionName}(cursor)
+            resp = KdbGeneratedQuery.query_${entry.functionName}(cursor)
         }
     }
     return resp
@@ -302,19 +277,19 @@ suspend fun ImplKdbCommand.Query.${entry.key.niceClassName}(query: String, param
 
 fun generateExtDeleteFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbExtGeneratedDelete.kt",
-        suppress = listOf("FunctionName")
+//        suppress = listOf("FunctionName")
     ) {
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
             append(
                 """
-suspend fun ImplKdbCommand.Delete.${entry.key.niceClassName}(where: String = "1=1") {
+suspend fun ImplKdbCommand.Delete.${entry.niceClassName}(where: String = "1=1") {
     val command = "DELETE FROM ${
-                    entry.key.simpleName.asString().toUpperCase(Locale.ROOT)
+                    entry.simpleName
                 } WHERE ${'$'}where"
     kdb.connection {        
         db.exec(command)
@@ -328,20 +303,20 @@ suspend fun ImplKdbCommand.Delete.${entry.key.niceClassName}(where: String = "1=
 
 fun generateExtUpdateFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbExtGeneratedUpdate.kt",
-        suppress = listOf("FunctionName")
+//        suppress = listOf("FunctionName")
     ) {
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
             val command = "UPDATE ${
-                entry.key.simpleName.asString().toUpperCase(Locale.ROOT)
+                entry.simpleName
             } SET ${'$'}{ImplKdbUtilsFunctions.mapUpdateParams(params)}  WHERE ${'$'}where"
             append(
                 """
-suspend fun ImplKdbCommand.Update.${entry.key.niceClassName}(where: String = "1=1", params: Map<String, Any?> = mapOf()) {
+suspend fun ImplKdbCommand.Update.${entry.niceClassName}(where: String = "1=1", params: Map<String, Any?> = mapOf()) {
     kdb.connection {
         db.exec("$command")
     }
@@ -354,21 +329,21 @@ suspend fun ImplKdbCommand.Update.${entry.key.niceClassName}(where: String = "1=
 
 fun generateExtInsertFunctions(
     codeWriter: CodeWriter,
-    map: Map<KSClassDeclaration, Sequence<PropertyTypeHolder>>
+    map: List<TableNode>
 ) {
     codeWriter.add(
         KdbProcessor.packageOut,
         "KdbExtGeneratedInsert.kt",
-        suppress = listOf("RemoveRedundantQualifierName", "FunctionName")
+//        suppress = listOf("RemoveRedundantQualifierName", "FunctionName")
     ) {
-        map.entries.forEach { entry ->
+        map.forEach { entry ->
             append(
                 """
-suspend fun ImplKdbCommand.Insert.${entry.key.niceClassName}(item: ${entry.key.qualifiedName!!.asString()}) = ${entry.key.niceClassName}(arrayOf(item))
+suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(item: ${entry.qualifiedName}) = ${entry.niceClassName}(arrayOf(item))
 
-suspend fun ImplKdbCommand.Insert.${entry.key.niceClassName}(items: List<${entry.key.qualifiedName!!.asString()}>) = ${entry.key.niceClassName}(items.toTypedArray())
+suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: List<${entry.qualifiedName}>) = ${entry.niceClassName}(items.toTypedArray())
 
-suspend fun ImplKdbCommand.Insert.${entry.key.niceClassName}(items: Array<${entry.key.qualifiedName!!.asString()}>) = kdb.connection { KdbGeneratedInsert.insert_${entry.key.functionName}(items, db) }
+suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: Array<${entry.qualifiedName}>) = kdb.connection { KdbGeneratedInsert.insert_${entry.functionName}(items, db) }
 """
             )
         }
