@@ -1,4 +1,5 @@
 ksp {
-    arg("KdbSrcOut", "${projectDir.absolutePath}/src/main/ksp")
+//    arg("KdbSrcOut", "${projectDir.absolutePath}/src/main/ksp")
+    arg("KdbSrcOut", "${projectDir.absolutePath}/build/generated/ksp/debug")
     arg("KdbMode", "JVM-DESKTOP")
 }
