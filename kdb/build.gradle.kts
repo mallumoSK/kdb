@@ -7,14 +7,14 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "0.0.3"
+version = "0.1.0"
 
 android {
     compileSdkVersion(30)
-    buildToolsVersion = "30.0.2"
+//    buildToolsVersion = "30.0.2"
 
     defaultConfig {
-        minSdkVersion(23)
+        minSdkVersion(21)
         targetSdkVersion(30)
     }
     sourceSets {
@@ -23,6 +23,11 @@ android {
             manifest.srcFile("src/androidMain/AndroidManifest.xml")
 //            res.srcDirs("src/androidMain/res")
         }
+    }
+    configurations {
+        create("testApi")
+        create("testDebugApi")
+        create("testReleaseApi")
     }
 }
 
@@ -37,20 +42,13 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
             }
         }
 
         val jvmDesktopMain by getting {
             dependencies {
-//                api("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
                 dependsOn(commonMain)
-//                api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlinVersion")
-//                api("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$kotlinSerializationVersion")
-//                api("io.ktor:ktor-client-serialization-jvm:$ktorVersion")
-//                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-//                api("io.ktor:ktor-client-core-jvm:$ktorVersion")
-//                api("io.ktor:ktor-client-logging-jvm:$ktorVersion")
             }
         }
 
@@ -72,8 +70,3 @@ tasks.withType<KotlinCompile> {
     }
 }
 apply("../secure.gradle")
-//publishing {
-//    repositories {
-//        maven("/tmp/___/")
-//    }
-//}
