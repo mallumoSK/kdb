@@ -1,17 +1,16 @@
 package tk.mallumo.kdb.ksp
 
-import com.google.devtools.ksp.processing.CodeGenerator
-import com.google.devtools.ksp.processing.KSPLogger
-import com.google.devtools.ksp.processing.Resolver
-import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
-import tk.mallumo.kdb.ksp.HashUtils.sha1
-import java.io.File
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 
 class KdbProcessor : SymbolProcessor {
 
-    private lateinit var codeWriter: CodeWriter
+    private lateinit var codeGenerator: CodeGenerator
 
     private lateinit var options: Map<String, String>
 
@@ -19,8 +18,6 @@ class KdbProcessor : SymbolProcessor {
 
     companion object {
         const val packageOut = "tk.mallumo.kdb"
-        private const val errProjectOutDir =
-            "Inside yours gradle.build must be defined constant (output): 'ksp.arg(\"KdbSrcOut\", \"\${projectDir.absolutePath}/src/main/ksp\")'"
         private const val errProjectMode =
             "Inside yours gradle.build must be defined mode (ANDROID, JVM-DESKTOP): 'ksp.arg(\"KdbMode\", \"ANDROID\")'"
     }
@@ -33,58 +30,169 @@ class KdbProcessor : SymbolProcessor {
     ) {
         this.options = options
         this.mode = options["KdbMode"] ?: throw RuntimeException(errProjectMode)
-        this.codeWriter = CodeWriter(
-            directory = File(
-                options["KdbSrcOut"] ?: throw RuntimeException(
-                    errProjectOutDir
-                )
-            ),
-            rootPackage = packageOut
-        )
+        this.codeGenerator = codeGenerator
     }
 
-    override fun process(resolver: Resolver) {
-        val tablesArr = buildDeclarationMap(resolver, "tk.mallumo.kdb.KdbTable")
-        val queryInsertArr = buildDeclarationMap(resolver, "tk.mallumo.kdb.KdbQI")
-        val all = arrayListOf<TableNode>().apply {
-            addAll(tablesArr)
-            addAll(queryInsertArr)
-        }
-
-        if (all.isEmpty()) return
-
-        val hash = all.joinToString("\n") { it.toString().sha1() }
-        if (hash != codeWriter.readTmpFile("hash.tmp")) {
-            generateCreator(codeWriter, mode)
-            generateDefStructure(codeWriter, tablesArr)
-//
-            generateIndexFunctions(codeWriter, all)
-            generateFillFunctions(codeWriter, all)
-            generateCursorFunctions(codeWriter, all)
-            generateInsertFunctions(codeWriter, tablesArr)
-//
-            generateExtCursorFunctions(codeWriter, all)
-            generateExtInsertFunctions(codeWriter, tablesArr)
-            generateExtUpdateFunctions(codeWriter, tablesArr)
-            generateExtDeleteFunctions(codeWriter, tablesArr)
-
-            write(hash)
-        }
-
-    }
-
-    private fun buildDeclarationMap(resolver: Resolver, annotationClass: String) =
+    private fun getDclarations(resolver: Resolver, annotationClass: String) =
         resolver.getSymbolsWithAnnotation(annotationClass) // symbols with annotation
-            .filterIsInstance<KSClassDeclaration>() // only usable classes
-            .map { TableNode(it) }
 
-    private fun write(hash: String) {
-        codeWriter.write(deleteOld = true)
-        codeWriter.writeTmpFile("hash.tmp", hash)
+    val tableNodes = hashMapOf<String, TableNode>()
+    val queryNodes = hashMapOf<String, TableNode>()
+    val allNodes = hashMapOf<String, TableNode>()
+
+    override fun process(resolver: Resolver): List<KSAnnotated> {
+        val tableDeclarations = getDclarations(resolver, "tk.mallumo.kdb.KdbTable")
+        val queryDeclarations = getDclarations(resolver, "tk.mallumo.kdb.KdbQI")
+
+        //tableValid
+        tableDeclarations.filterIsInstance<KSClassDeclaration>()
+            .map { it.qualifiedName!!.asString() to TableNode(it) }
+            .also {
+                tableNodes.putAll(it)
+                allNodes.putAll(it)
+            }
+        //queryValid
+        queryDeclarations.filterIsInstance<KSClassDeclaration>()
+            .map { it.qualifiedName!!.asString() to TableNode(it) }
+            .also {
+                queryNodes.putAll(it)
+                allNodes.putAll(it)
+            }
+        return tableDeclarations.filterNot { it is KSClassDeclaration }
+            .plus(queryDeclarations.filterNot { it is KSClassDeclaration })
     }
 
 
     override fun finish() {
+        if (allNodes.isNotEmpty()) {
+
+            val all = allNodes.values.toList()
+            val tables = tableNodes.values.toList()
+
+            val filesAll = all.map { it.files }
+                .flatten()
+                .filterNotNull()
+                .distinctBy { it.filePath }
+                .toTypedArray()
+
+            val filesTables = tables.map { it.files }
+                .flatten()
+                .filterNotNull()
+                .distinctBy { it.filePath }
+                .toTypedArray()
+
+            val dependenciesAll = Dependencies(true, *filesAll)
+            val dependenciesTables = Dependencies(true, *filesTables)
+
+            output(
+                name = "KdbGenerated",
+                dependencies = dependenciesAll,
+                imports = ""
+            ) {
+                generateCreator(mode)
+            }
+
+            output(
+                name = "KdbGeneratedDefStructure",
+                dependencies = dependenciesTables,
+                imports = ""
+            ) {
+                generateDefStructure(tables)
+            }
+
+//
+            output(
+                name = "KdbGeneratedIndex",
+                dependencies = dependenciesAll,
+                imports = """
+import tk.mallumo.kdb.sqlite.Cursor
+import java.util.Locale"""
+            ) {
+                generateIndexFunctions(all)
+            }
+
+            output(
+                name = "KdbGeneratedFill",
+                dependencies = dependenciesAll,
+                imports = ""
+            ) {
+                generateFillFunctions(all)
+            }
+            output(
+                name = "KdbGeneratedQuery",
+                dependencies = dependenciesAll,
+                imports = ""
+            ) {
+                generateCursorFunctions(all)
+            }
+            output(
+                name = "KdbGeneratedInsert",
+                dependencies = dependenciesTables,
+                imports = """
+import tk.mallumo.kdb.sqlite.SqliteDB"""
+            ) {
+                generateInsertFunctions(tables)
+            }
+
+            output(
+                name = "KdbExtGeneratedQuery",
+                dependencies = dependenciesAll,
+                imports = ""
+            ) {
+                generateExtCursorFunctions(all)
+            }
+
+            output(
+                name = "KdbExtGeneratedInsert",
+                dependencies = dependenciesTables,
+                imports = ""
+            ) {
+                generateExtInsertFunctions(tables)
+            }
+            output(
+                name = "KdbExtGeneratedUpdate",
+                dependencies = dependenciesTables,
+                imports = ""
+            ) {
+                generateExtUpdateFunctions(tables)
+            }
+            output(
+                name = "KdbExtGeneratedDelete",
+                dependencies = dependenciesTables,
+                imports = ""
+            ) {
+                generateExtDeleteFunctions(tables)
+            }
+        }
+    }
+
+    @OptIn(ExperimentalContracts::class)
+    private fun output(
+        name: String,
+        dependencies: Dependencies,
+        imports: String = "",
+        content: () -> String
+    ) {
+        contract {
+            callsInPlace(content, InvocationKind.EXACTLY_ONCE)
+        }
+        codeGenerator.createNewFile(
+            dependencies = dependencies,
+            packageName = packageOut,
+            fileName = name,
+            extensionName = "kt"
+        ).bufferedWriter().use {
+            it.write(
+                """
+@file:Suppress("unused")
+package $packageOut
+
+$imports
+
+${content()}"""
+            )
+            it.flush()
+        }
     }
 }
 

@@ -99,52 +99,42 @@ kdb.update.test_table(where = "item_string = 'b'",
 ## How to implement
 
 1. add plugin (**build.gradle**)
+
 ```groovy
 plugins {
-    id("kotlin-ksp") version "1.4.0-dev-experimental-20200914"
+  id("com.google.devtools.ksp") version "1.4.30-1.0.0-alpha02"
 }
+
 //...
+
 android{
-    //...
+  //...
+  sourceSets.main.java.srcDirs += ['build/generated/ksp/debug/kotlin']
 }
+
 //...
 
-apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-config.gradle'
+repositories {
+  maven {
+    url = uri("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
+  }
+}
 
-//ANDROID:
-apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-android.gradle'
-//JVM DESKTOP:
-apply from: 'https://raw.githubusercontent.com/mallumoSK/kdb/main/ksp-kdb-jvm_desktop.gradle'
+//...
 
 dependencies {
-    implementation "tk.mallumo:kdb:x.y.z"
-    ksp "tk.mallumo:kdb-ksp:x.y.z"
+  implementation "tk.mallumo:kdb:x.y.z"
+  ksp "tk.mallumo:kdb-ksp:x.y.z"
 }
 ```
 
-2. add pluginResolutionStrategy On top of file **settings.gradle** add this:
+2. add pluginManagement **On top** of file **settings.gradle** :
 ```groovy
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            if ("kotlin-ksp".equals(requested.id.id)) {
-                useModule("org.jetbrains.kotlin:kotlin-ksp:${requested.version}")
-            }
-            if ("org.jetbrains.kotlin.kotlin-ksp".equals(requested.id.id)) {
-                useModule("org.jetbrains.kotlin:kotlin-ksp:${requested.version}")
-            }
-            if ("org.jetbrains.kotlin.ksp".equals(requested.id.id)) {
-                useModule("org.jetbrains.kotlin:kotlin-ksp:${requested.version}")
-            }
-        }
-    }
-    repositories {
-        gradlePluginPortal()
-        maven {
-            url = "https://dl.bintray.com/kotlin/kotlin-eap"
-        }
-        google()
-    }
+  repositories {
+    gradlePluginPortal()
+    google()
+  }
 }
 ```
 

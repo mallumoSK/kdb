@@ -5,6 +5,7 @@ import com.google.devtools.ksp.getAllSuperTypes
 import com.google.devtools.ksp.getDeclaredProperties
 import com.google.devtools.ksp.isAbstract
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import com.google.devtools.ksp.symbol.KSFile
 import java.util.*
 
 class TableNode(
@@ -13,9 +14,11 @@ class TableNode(
     val simpleName: String = simpleNameOrigin.toUpperCase(Locale.ENGLISH),
     val qualifiedName: String = declaration.qualifiedName!!.asString(),
     val functionName: String = qualifiedName.replace(".", "_"),
-    val property: Sequence<PropertyTypeHolder> = extractProperty(declaration)
-) {
-
+    val property: Sequence<PropertyTypeHolder> = extractProperty(declaration),
+    val files: List<KSFile?> = declaration.getAllSuperTypes()
+        .map { it.declaration.containingFile }
+        .plus(declaration.containingFile)
+        .toList()) {
 
     val niceClassName: String
         get() = simpleNameOrigin.split("_")

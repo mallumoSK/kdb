@@ -7,12 +7,11 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "0.1.0"
+version = "1.0.0"
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing:1.4.20-dev-experimental-20201222")
+    api("com.google.devtools.ksp:symbol-processing-api:1.4.30-1.0.0-alpha02")
 }
-
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {

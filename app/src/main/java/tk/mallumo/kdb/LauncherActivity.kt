@@ -10,6 +10,7 @@ open class TEST_TABLE(
     @KdbColumnUnique var item_float: Float = 0F,
     var item_int: Int = 0,
     var item_long: Long = 0,
+    var a: String = ""
 )
 
 @KdbQI
