@@ -3,6 +3,7 @@ package tk.mallumo.kdb.ksp
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
+import java.io.File
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -40,10 +41,14 @@ class KdbProcessor : SymbolProcessor {
     val queryNodes = hashMapOf<String, TableNode>()
     val allNodes = hashMapOf<String, TableNode>()
 
+    val cache = File("/tmp/___/cache-x").apply {
+        if(!exists()) createNewFile()
+    }
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val tableDeclarations = getDclarations(resolver, "tk.mallumo.kdb.KdbTable")
         val queryDeclarations = getDclarations(resolver, "tk.mallumo.kdb.KdbQI")
 
+        cache.appendText("\n NEW->\n${resolver.getAllFiles().joinToString("\n") { it.filePath }}")
         //tableValid
         tableDeclarations.filterIsInstance<KSClassDeclaration>()
             .map { it.qualifiedName!!.asString() to TableNode(it) }

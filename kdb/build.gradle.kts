@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     id("com.android.library")
     kotlin("multiplatform")
@@ -7,7 +5,7 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.0.0"
+version = "1.0.1"
 
 android {
     compileSdkVersion(30)
@@ -42,7 +40,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.3")
             }
         }
 
@@ -64,7 +62,7 @@ kotlin {
 
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.6"
     }

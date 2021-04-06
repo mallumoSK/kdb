@@ -102,7 +102,7 @@ kdb.update.test_table(where = "item_string = 'b'",
 
 ```groovy
 plugins {
-  id("com.google.devtools.ksp") version "1.4.30-1.0.0-alpha02"
+  id("com.google.devtools.ksp") version "1.4.31-1.0.0-alpha06"
 }
 
 //...

@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm")
     `maven-publish`
@@ -7,13 +5,13 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.0.0"
+version = "1.0.1"
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing-api:1.4.30-1.0.0-alpha02")
+    api("com.google.devtools.ksp:symbol-processing-api:1.4.31-1.0.0-alpha06")
 }
 
-tasks.withType<KotlinCompile> {
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.6"
     }

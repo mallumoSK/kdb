@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id("com.google.devtools.ksp") version "1.4.30-1.0.0-alpha02"
+    id("com.google.devtools.ksp") version "1.4.31-1.0.0-alpha06"
 }
 
 android {
@@ -50,7 +50,7 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
     implementation "tk.mallumo:log:8.3.0"
     implementation 'com.google.code.gson:gson:2.8.6'
 }
