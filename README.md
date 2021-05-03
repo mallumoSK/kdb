@@ -4,6 +4,7 @@
 
 ## KDB-KSP: ![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb-ksp/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml&style=for-the-badge "Version")
 
+```
 //Current version
 kotlin_version = '1.4.32'
 
