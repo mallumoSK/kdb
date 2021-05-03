@@ -14,11 +14,11 @@ android {
         minSdk = 21
         targetSdk = 30
     }
-    sourceSets.forEach {
-        it.java.srcDirs("src/androidMain/kotlin")
-        it.manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    }
+
     configurations {
+        create("androidTestApi")
+        create("androidTestDebugApi")
+        create("androidTestReleaseApi")
         create("testApi")
         create("testDebugApi")
         create("testReleaseApi")
@@ -44,11 +44,6 @@ kotlin {
             dependencies {
                 dependsOn(commonMain)
             }
-        }
-
-
-        val androidMain by getting {
-            dependsOn(commonMain)
         }
 
         all {
