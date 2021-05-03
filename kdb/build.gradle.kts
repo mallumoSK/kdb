@@ -5,23 +5,24 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.0.1"
+version = "1.1.0"
 
 android {
-    compileSdkVersion(30)
-//    buildToolsVersion = "30.0.2"
-
-    defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(30)
-    }
-    sourceSets {
-        val main by getting {
-            java.srcDirs("src/androidMain/kotlin")
-            manifest.srcFile("src/androidMain/AndroidManifest.xml")
-//            res.srcDirs("src/androidMain/res")
-        }
-    }
+//    compileSdkVersion(30)
+////    buildToolsVersion = "30.0.2"
+//
+//    defaultConfig {
+//        minSdkVersion(21)
+//        targetSdkVersion(30)
+//    }
+//    sourceSets {
+//        val main by getting {
+//
+//            java.srcDirs("src/androidMain/kotlin")
+//            manifest.srcFile("src/androidMain/AndroidManifest.xml")
+////            res.srcDirs("src/androidMain/res")
+//        }
+//    }
     configurations {
         create("testApi")
         create("testDebugApi")

@@ -4,6 +4,15 @@
 
 ## KDB-KSP: ![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb-ksp/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml&style=for-the-badge "Version")
 
+//Current version
+kotlin_version = '1.4.32'
+
+//Previous
+kotlin_version = '1.4.31'
+kdb = 1.0.1
+kdb-ksp = 1.0.1
+```
+
 * sqlite wrapper for desktop and mobile
 * Similiar to [ROOM](https://developer.android.com/jetpack/androidx/releases/room?hl=en) **BUT**
   * faster compilation time
@@ -102,7 +111,7 @@ kdb.update.test_table(where = "item_string = 'b'",
 
 ```groovy
 plugins {
-  id("com.google.devtools.ksp") version "1.4.31-1.0.0-alpha06"
+  id("com.google.devtools.ksp") version "1.4.32-1.0.0-alpha07"
 }
 
 //...
