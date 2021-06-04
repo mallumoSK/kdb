@@ -1,7 +1,5 @@
 package tk.mallumo.kdb.ksp
 
-import java.util.*
-
 object KdbMode {
     const val ANDROID = "ANDROID"
     const val JVM_DESKTOP = "JVM-DESKTOP"
@@ -48,7 +46,7 @@ fun generateDefStructure(
 
     map.forEach { entry ->
         val columns = entry.property.map {
-            "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.toUpperCase(Locale.ENGLISH)}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex})"
+            "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.uppercase()}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex})"
         }.joinToString(",\n", prefix = "arrayListOf(\n", postfix = ")")
 
         append(
@@ -72,12 +70,12 @@ fun generateIndexFunctions(
 
         val queryColumns = entry.property
             .joinToString(",\n", prefix = "intArrayOf(\n", postfix = ")") {
-                "\t\t\tcolumns.indexOf(\"${it.propertyName.toUpperCase(Locale.ENGLISH)}\")"
+                "\t\t\tcolumns.indexOf(\"${it.propertyName.uppercase()}\")"
             }
         append(
             """
     fun index_${entry.functionName}(cursor: Cursor): IntArray {
-        val columns = cursor.columns.map { it.toUpperCase(Locale.ROOT) }
+        val columns = cursor.columns.map { it.uppercase() }
         return $queryColumns
     }
 """
@@ -151,7 +149,7 @@ fun generateInsertFunctions(
 
     map.forEach { entry ->
 
-        val comumns = entry.property.map { "`${it.propertyName.toUpperCase(Locale.ENGLISH)}`" }
+        val comumns = entry.property.map { "`${it.propertyName.uppercase()}`" }
             .joinToString(",", prefix = "(", postfix = ")")
 
         val values = entry.property.map { "?" }

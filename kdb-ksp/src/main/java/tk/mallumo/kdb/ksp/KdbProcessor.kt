@@ -8,30 +8,26 @@ import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
+class KdbProcessorProvider : SymbolProcessorProvider {
+    override fun create(
+        environment: SymbolProcessorEnvironment
+    ): SymbolProcessor {
+        return KdbProcessor(environment.codeGenerator, environment.options)
+    }
+}
 
-class KdbProcessor : SymbolProcessor {
+class KdbProcessor(
+    private val codeGenerator: CodeGenerator,
+    options: Map<String, String>,
+    private var invoked: Boolean = false
+) : SymbolProcessor {
 
-    private lateinit var codeGenerator: CodeGenerator
-
-    private lateinit var options: Map<String, String>
-
-    lateinit var mode: String
+    var mode = options["KdbMode"] ?: throw RuntimeException(errProjectMode)
 
     companion object {
         const val packageOut = "tk.mallumo.kdb"
         private const val errProjectMode =
             "Inside yours gradle.build must be defined mode (ANDROID, JVM-DESKTOP): 'ksp.arg(\"KdbMode\", \"ANDROID\")'"
-    }
-
-    override fun init(
-        options: Map<String, String>,
-        kotlinVersion: KotlinVersion,
-        codeGenerator: CodeGenerator,
-        logger: KSPLogger
-    ) {
-        this.options = options
-        this.mode = options["KdbMode"] ?: throw RuntimeException(errProjectMode)
-        this.codeGenerator = codeGenerator
     }
 
     private fun getDclarations(resolver: Resolver, annotationClass: String) =
@@ -42,9 +38,12 @@ class KdbProcessor : SymbolProcessor {
     val allNodes = hashMapOf<String, TableNode>()
 
     val cache = File("/tmp/___/cache-x").apply {
-        if(!exists()) createNewFile()
+        if (!exists()) createNewFile()
     }
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
+        if (invoked) return emptyList()
+
         val tableDeclarations = getDclarations(resolver, "tk.mallumo.kdb.KdbTable")
         val queryDeclarations = getDclarations(resolver, "tk.mallumo.kdb.KdbQI")
 
@@ -63,8 +62,10 @@ class KdbProcessor : SymbolProcessor {
                 queryNodes.putAll(it)
                 allNodes.putAll(it)
             }
+        invoked = true
         return tableDeclarations.filterNot { it is KSClassDeclaration }
             .plus(queryDeclarations.filterNot { it is KSClassDeclaration })
+            .toList()
     }
 
 

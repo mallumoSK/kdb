@@ -6,7 +6,14 @@
 
 ```
 //Current version
+kotlin_version = '1.5.10'
+ksp = 1.5.10-1.0.0-beta01
+
+//Previous
 kotlin_version = '1.4.32'
+kdb = 1.1.0
+kdb-ksp = 1.1.0
+ksp = 1.4.32-1.0.0-alpha07
 
 //Previous
 kotlin_version = '1.4.31'
@@ -112,7 +119,7 @@ kdb.update.test_table(where = "item_string = 'b'",
 
 ```groovy
 plugins {
-  id("com.google.devtools.ksp") version "1.4.32-1.0.0-alpha07"
+  id("com.google.devtools.ksp") version "1.5.10-1.0.0-beta01"
 }
 
 //...
@@ -129,6 +136,12 @@ repositories {
     url = uri("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
   }
 }
+
+//if android:
+ksp.arg("KdbMode", "ANDROID")
+
+//if desktop:
+ksp.arg("KdbMode", "JVM-DESKTOP")
 
 //...
 

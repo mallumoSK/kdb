@@ -5,15 +5,15 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.1.0"
+version = "1.2.0"
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing-api:1.4.32-1.0.0-alpha07")
+    api("com.google.devtools.ksp:symbol-processing-api:1.5.10-1.0.0-beta01")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.6"
+        jvmTarget = "1.8"
     }
 }
 apply("../secure-ksp.gradle")

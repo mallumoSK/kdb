@@ -2,10 +2,6 @@
 
 package tk.mallumo.kdb
 
-
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -13,37 +9,10 @@ import tk.mallumo.kdb.sqlite.SqliteDB
 
 
 class Kdb internal constructor(
-    db: SqliteDB,
-    dbDefArray: ArrayList<ImplKdbTableDef>,
-    isDebug: Boolean
+    private val db: SqliteDB,
+    private val dbDefArray: ArrayList<ImplKdbTableDef>,
+    private val isDebug: Boolean
 ) {
-
-    private lateinit var connection: ImplKdbConnection
-    private var isInitComplete = false
-
-    init {
-        GlobalScope.launch(coroutineKdbDispatcher) {
-            db.open()
-            DbRecreatingFunctions.rebuildDatabase(db, dbDefArray, isDebug)
-            connection = ImplKdbConnection(db, isDebug)
-            isInitComplete = true
-        }
-    }
-
-    val insert by lazy {
-        ImplKdbCommand.Insert(this)
-    }
-
-    val delete by lazy {
-        ImplKdbCommand.Delete(this)
-    }
-    val update by lazy {
-        ImplKdbCommand.Update(this)
-    }
-    val query by lazy {
-        ImplKdbCommand.Query(this)
-    }
-
 
     companion object {
         fun newInstance(
@@ -55,20 +24,53 @@ class Kdb internal constructor(
         internal val kdbLock = Mutex()
     }
 
-    suspend fun <T : Any> connection(conn: suspend ImplKdbConnection.() -> T): T {
+    private lateinit var connection: ImplKdbConnection
+    private var isInitComplete = false
 
-        return withContext(coroutineKdbDispatcher) {
-            while (!isInitComplete) {
-                delay(2)
-            }
-            val resp: T
-            kdbLock.withLock {
-                resp = conn.invoke(connection)
-            }
-            resp
-        }
+    val insert by lazy {
+        ImplKdbCommand.Insert(this)
     }
 
+    val delete by lazy {
+        ImplKdbCommand.Delete(this)
+    }
+
+    val update by lazy {
+        ImplKdbCommand.Update(this)
+    }
+
+    val query by lazy {
+        ImplKdbCommand.Query(this)
+    }
+
+    suspend fun prepareDatabase(): Kdb {
+        withContext(coroutineKdbDispatcher) {
+            kdbLock.withLock {
+                initDatabase()
+            }
+        }
+        return this
+    }
+
+    private suspend fun initDatabase() {
+        if (isInitComplete) return
+
+        db.open()
+        DbRecreatingFunctions.rebuildDatabase(db, dbDefArray, isDebug)
+        connection = ImplKdbConnection(db, isDebug)
+        isInitComplete = true
+    }
+
+    suspend fun <T : Any> connection(conn: suspend ImplKdbConnection.() -> T): T {
+        return withContext(coroutineKdbDispatcher) {
+            kdbLock.withLock {
+                if (!isInitComplete) {
+                    initDatabase()
+                }
+                conn.invoke(connection)
+            }
+        }
+    }
 
     suspend fun exec(sql: String) {
         connection {
