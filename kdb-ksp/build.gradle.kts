@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.2.0"
+version = "1.2.1"
 
 dependencies {
     api("com.google.devtools.ksp:symbol-processing-api:1.5.10-1.0.0-beta01")
