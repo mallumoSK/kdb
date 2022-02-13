@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.6.10-1.0.2-1.3.0"
+version = "1.6.10-1.0.2-1.3.2"
 
 android {
     compileSdk = 30

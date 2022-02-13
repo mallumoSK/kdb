@@ -29,7 +29,9 @@ actual class Cursor(val query: ResultSet) : Closeable {
                 .lowercase(Locale.getDefault())
         }.toTypedArray()
 
-    actual val size: Int = itemsCount
+    actual val size: Int by lazy {
+        itemsCount
+    }
 
     actual fun next(): Boolean = query.next()
 
