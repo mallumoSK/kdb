@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package tk.mallumo.kdb.sqlite
 
 import tk.mallumo.kdb.tryPrint
@@ -8,7 +10,7 @@ import java.util.*
 actual class Cursor(val query: android.database.Cursor) : Closeable {
 
     actual val columns: Array<String> = query.columnNames.map {
-        it.toLowerCase(Locale.ROOT)
+        it.lowercase(Locale.ROOT)
     }.toTypedArray()
 
     actual val size: Int = query.count

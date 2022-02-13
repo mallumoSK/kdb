@@ -1,3 +1,5 @@
+@file:Suppress("unused")
+
 package tk.mallumo.kdb.ksp
 
 import java.util.*
@@ -8,12 +10,12 @@ class KdbTableDef(
 ) {
 
     object ColumnType {
-        val UNDEFINED = "UNDEFINED"
-        val TEXT = "TEXT"
-        val NUMERIC = "NUMERIC"
-        val INTEGER = "INTEGER"
-        val BIGINT = "BIGINT"
-        val DOUBLE = "DOUBLE"
+        const val UNDEFINED = "UNDEFINED"
+        const val TEXT = "TEXT"
+        const val NUMERIC = "NUMERIC"
+        const val INTEGER = "INTEGER"
+        const val BIGINT = "BIGINT"
+        const val DOUBLE = "DOUBLE"
     }
 
     data class Item(

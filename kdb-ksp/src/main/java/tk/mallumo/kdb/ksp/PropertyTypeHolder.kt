@@ -44,7 +44,7 @@ data class PropertyTypeHolder(
             val typeName = declaration.qualifiedName?.asString() ?: return null
             val cursorTypeName = typeName
                 .split(".")[1]
-                .toLowerCase(Locale.ROOT)
+                .lowercase(Locale.ENGLISH)
                 .let {
                     if (it != "float") it
                     else "double"
@@ -63,8 +63,8 @@ data class PropertyTypeHolder(
 
             val isUnique = prop.annotations.any { it.shortName.asString() == "KdbColumnUnique" }
             val isIndex = prop.annotations.any { it.shortName.asString() == "KdbColumnIndex" }
-            return when {
-                typeName in directTypes -> {
+            return when (typeName) {
+                in directTypes -> {
                     PropertyTypeHolder(
                         name,
                         typeName,

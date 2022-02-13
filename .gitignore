@@ -84,7 +84,6 @@ lint/outputs/
 lint/tmp/
 # lint/reports/
 /.idea/
-/gradle/wrapper/
 /secure.gradle
 /secure-ksp.gradle
 /app/src/main/ksp/tk/mallumo/kdb/

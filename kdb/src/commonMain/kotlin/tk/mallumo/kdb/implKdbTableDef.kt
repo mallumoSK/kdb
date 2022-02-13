@@ -2,7 +2,7 @@ package tk.mallumo.kdb
 
 class ImplKdbTableDef(
     var name: String = "",
-    val columns: ArrayList<Item> = arrayListOf()
+    val columns: MutableList<Item> = mutableListOf()
 ) {
 
     fun getUnique(): List<String> = columns.filter { it.unique }.map { it.name }
@@ -54,7 +54,7 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
 fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean)
         : List<String> {
 
-    val result = arrayListOf<String>()
+    val result = mutableListOf<String>()
     if (redeclareType) {
         result.add("DROP TABLE IF EXISTS KDB_REDECLARE_TABLE_$name")
     }
@@ -85,6 +85,7 @@ fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean
     return result
 }
 
+@Suppress("FunctionName")
 fun ImplKdbTableDef.redeclare1_Refill(): String {
     return StringBuilder().apply {
         append("INSERT INTO KDB_REDECLARE_TABLE_$name SELECT ")
@@ -96,19 +97,21 @@ fun ImplKdbTableDef.redeclare1_Refill(): String {
     }.toString()
 }
 
+@Suppress("FunctionName")
 fun ImplKdbTableDef.redeclare2_Drop(): String {
     return "DROP TABLE IF EXISTS $name"
 }
 
+@Suppress("FunctionName")
 fun ImplKdbTableDef.redeclare3_Rename(): String {
     return "ALTER TABLE KDB_REDECLARE_TABLE_$name RENAME TO  $name"
 }
 
-fun ImplKdbTableDef.applyIndexes(oldIndexes: List<String> = listOf()): ArrayList<String> {
+fun ImplKdbTableDef.applyIndexes(oldIndexes: List<String> = listOf()): MutableList<String> {
     val newIndexes = getIndexes()
         .filter { index -> columns.any { it.name == index } }
 
-    return arrayListOf<String>().apply {
+    return mutableListOf<String>().apply {
         newIndexes.forEach {
             add("CREATE INDEX IF NOT EXISTS INDEX_${name}_${it} ON $name (${it})")
         }

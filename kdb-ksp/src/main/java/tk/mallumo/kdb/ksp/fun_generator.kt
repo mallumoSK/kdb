@@ -39,15 +39,15 @@ fun generateDefStructure(
     append("object KdbGeneratedDefStructure{\n")
 
     val tables =
-        map.joinToString(separator = ",\n", prefix = "arrayListOf(", postfix = ")") {
+        map.joinToString(separator = ",\n", prefix = "mutableListOf(", postfix = ")") {
             "getTableDefItem(${it.qualifiedName}())"
         }
-    append("\n\tfun getTablesDef(): ArrayList<ImplKdbTableDef> = $tables\n")
+    append("\n\tfun getTablesDef(): MutableList<ImplKdbTableDef> = $tables\n")
 
     map.forEach { entry ->
         val columns = entry.property.map {
             "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.uppercase()}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex})"
-        }.joinToString(",\n", prefix = "arrayListOf(\n", postfix = ")")
+        }.joinToString(",\n", prefix = "mutableListOf(\n", postfix = ")")
 
         append(
             """
@@ -123,8 +123,8 @@ fun generateCursorFunctions(
     map.forEach { entry ->
         append(
             """
-    fun query_${entry.functionName}(cursor: tk.mallumo.kdb.sqlite.Cursor): ArrayList<${entry.qualifiedName}> {
-        val out = arrayListOf<${entry.qualifiedName}>()
+    fun query_${entry.functionName}(cursor: tk.mallumo.kdb.sqlite.Cursor): MutableList<${entry.qualifiedName}> {
+        val out = mutableListOf<${entry.qualifiedName}>()
         if (cursor.columns.isNotEmpty()) {
             val indexArray = KdbGeneratedIndex.index_${entry.functionName}(cursor)
             while (cursor.next()) {
@@ -198,8 +198,8 @@ fun generateExtCursorFunctions(
     map.forEach { entry ->
         append(
             """
-suspend fun ImplKdbCommand.Query.${entry.niceClassName}(query: String, params: Map<String, Any?> = mapOf()): ArrayList<${entry.qualifiedName}> {
-    var resp = arrayListOf<${entry.qualifiedName}>()
+suspend fun ImplKdbCommand.Query.${entry.niceClassName}(query: String, params: Map<String, Any?> = mapOf()): MutableList<${entry.qualifiedName}> {
+    var resp = mutableListOf<${entry.qualifiedName}>()
     kdb.connection {
         db.query(ImplKdbUtilsFunctions.mapQueryParams(query, params)) { cursor ->
             resp = KdbGeneratedQuery.query_${entry.functionName}(cursor)

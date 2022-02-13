@@ -12,7 +12,8 @@
         android:theme="@style/Theme.Kdb"
         android:name="tk.mallumo.kdb.MainApplication"
         tools:ignore="AllowBackup">
-        <activity android:name="tk.mallumo.kdb.LauncherActivity">
+        <activity android:name="tk.mallumo.kdb.LauncherActivity"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

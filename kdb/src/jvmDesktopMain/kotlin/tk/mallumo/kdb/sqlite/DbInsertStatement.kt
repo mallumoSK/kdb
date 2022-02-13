@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package tk.mallumo.kdb.sqlite
 
 import tk.mallumo.kdb.tryIgnore

@@ -19,7 +19,7 @@ class ImplKdbConnection internal constructor(
         db.call(sql)
     }
 
-    protected fun execIUD(command: String) {
+    private fun execIUD(command: String) {
         if (debug) log(command)
         db.exec(command)
     }

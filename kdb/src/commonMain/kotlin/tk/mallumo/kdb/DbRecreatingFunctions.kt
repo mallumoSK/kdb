@@ -1,5 +1,6 @@
 package tk.mallumo.kdb
 
+import kotlinx.coroutines.coroutineScope
 import tk.mallumo.kdb.sqlite.SqliteDB
 
 internal object DbRecreatingFunctions {
@@ -12,7 +13,7 @@ internal object DbRecreatingFunctions {
 
     suspend fun rebuildDatabase(
         db: SqliteDB,
-        dbDefArray: ArrayList<ImplKdbTableDef>,
+        dbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ) {
         rebuildTables(db, readOldDbDef(db, dbDefArray, debug), dbDefArray, debug)
@@ -23,7 +24,7 @@ internal object DbRecreatingFunctions {
     private suspend fun rebuildTables(
         db: SqliteDB,
         oldDefinitionArr: List<ImplKdbTableDef>,
-        newDefinitionArr: ArrayList<ImplKdbTableDef>,
+        newDefinitionArr: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ) {
         var writeChanges = false
@@ -41,7 +42,7 @@ internal object DbRecreatingFunctions {
             } else {
                 var redeclareTable = newDef.getUnique().toString() != oldDef.getUnique().toString()
 
-                val alterColumn = arrayListOf<ImplKdbTableDef.Item>()
+                val alterColumn = mutableListOf<ImplKdbTableDef.Item>()
                 newDef.columns.forEach { newC ->
                     oldDef.columns.firstOrNull { oldC -> oldC.name == newC.name }.also {
                         if (it == null) {
@@ -107,22 +108,22 @@ internal object DbRecreatingFunctions {
     }
 
 
-    private suspend fun writeNewDbDef(db: SqliteDB, dbDefArray: ArrayList<ImplKdbTableDef>) {
-
+    private suspend fun writeNewDbDef(db: SqliteDB, dbDefArray: MutableList<ImplKdbTableDef>) = coroutineScope {
+        val isMySqlMode = false
         db.exec(
             """
             CREATE TABLE IF NOT EXISTS $dbDefTable (
-                        ${if (true) dbDefColumns else dbDefColumnsCreator}, 
+                        ${if (!isMySqlMode) dbDefColumns else dbDefColumnsCreator}, 
                 UNIQUE (NAME_TABLE, NAME_COLUMN)
-                        ${if (true) "ON CONFLICT REPLACE" else ""})
+                        ${if (!isMySqlMode) "ON CONFLICT REPLACE" else ""})
         """.trimIndent()
         )
 
         db.insert(
             """
-            ${if (true) "INSERT" else "MERGE"}
+            ${if (!isMySqlMode) "INSERT" else "MERGE"}
             INTO $dbDefTable (${dbDefColumns})
-            ${if (true) "" else "KEY (NAME_TABLE, NAME_COLUMN)"}
+            ${if (!isMySqlMode) "" else "KEY (NAME_TABLE, NAME_COLUMN)"}
             VALUES (?,?,?,?,?,?)
         """.trimIndent()
         ) {
@@ -145,9 +146,9 @@ internal object DbRecreatingFunctions {
         db.exec("DELETE FROM $dbDefTable WHERE (NAME_TABLE || '-' || NAME_COLUMN) NOT IN ($podm)")
     }
 
-    private suspend fun readOldDefDirect(db: SqliteDB): List<ImplKdbTableDef>? {
+    private suspend fun readOldDefDirect(db: SqliteDB): List<ImplKdbTableDef>? = coroutineScope {
         val map = HashMap<String, ImplKdbTableDef>()
-        return try {
+        try {
             db.query(
                 """
            SELECT $dbDefColumns
@@ -189,7 +190,7 @@ internal object DbRecreatingFunctions {
 
     private suspend fun readOldDbDef(
         db: SqliteDB,
-        newDbDefArray: ArrayList<ImplKdbTableDef>,
+        newDbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ): List<ImplKdbTableDef> {
         return readOldDefDirect(db) ?: readOldDefFromTables(db, newDbDefArray, debug)
@@ -197,16 +198,16 @@ internal object DbRecreatingFunctions {
 
     private suspend fun readOldDefFromTables(
         db: SqliteDB,
-        newDbDefArray: ArrayList<ImplKdbTableDef>,
+        newDbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
-    ): List<ImplKdbTableDef> {
-        val oldDef = arrayListOf<ImplKdbTableDef>()
+    ): List<ImplKdbTableDef> = coroutineScope {
+        val oldDef = mutableListOf<ImplKdbTableDef>()
         newDbDefArray.forEach { def ->
             val table = ImplKdbTableDef(def.name)
             try {
                 db.query("SELECT * FROM ${def.name} LIMIT 1") { cursor ->
                     cursor.columns.forEach {
-                        table.columns.add(ImplKdbTableDef.Item(it.toUpperCase()))
+                        table.columns.add(ImplKdbTableDef.Item(it.uppercase()))
                     }
                 }
                 if (debug) log("RECREATING TABLE ${def.name} FOUND")
@@ -216,7 +217,7 @@ internal object DbRecreatingFunctions {
             }
 
         }
-        return oldDef
+        oldDef
     }
 
 

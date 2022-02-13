@@ -3,6 +3,7 @@ repositories {
         url = uri("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
     }
     google()
+    mavenCentral()
 }
 
 android.sourceSets.main.java.srcDirs += ['build/generated/ksp/debug/kotlin']

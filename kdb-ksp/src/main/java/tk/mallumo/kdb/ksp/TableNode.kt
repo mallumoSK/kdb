@@ -10,36 +10,38 @@ import java.util.*
 
 class TableNode(
     declaration: KSClassDeclaration,
-    val simpleNameOrigin: String = declaration.simpleName.asString(),
-    val simpleName: String = simpleNameOrigin.toUpperCase(Locale.ENGLISH),
+    private val simpleNameOrigin: String = declaration.simpleName.asString(),
+    val simpleName: String = simpleNameOrigin.uppercase(Locale.ENGLISH),
     val qualifiedName: String = declaration.qualifiedName!!.asString(),
     val functionName: String = qualifiedName.replace(".", "_"),
     val property: Sequence<PropertyTypeHolder> = extractProperty(declaration),
     val files: List<KSFile?> = declaration.getAllSuperTypes()
         .map { it.declaration.containingFile }
         .plus(declaration.containingFile)
-        .toList()) {
+        .toList()
+) {
 
     val niceClassName: String
-        get() = simpleNameOrigin.split("_")
-            .map { part ->
+        get() = simpleNameOrigin
+            .split("_")
+            .joinToString("_") { part ->
                 var joined = ""
                 part.forEachIndexed { index, c ->
                     when {
                         index == 0 -> {
-                            joined += c.toLowerCase()
+                            joined += c.lowercaseChar()
                         }
                         part.lastIndex == index -> {
-                            joined += c.toLowerCase()
+                            joined += c.lowercaseChar()
                         }
                         c.isLowerCase() && part[index + 1].isUpperCase() -> {
                             joined += "${c}_"
                         }
-                        else -> joined += c.toLowerCase()
+                        else -> joined += c.lowercaseChar()
                     }
                 }
                 joined
-            }.joinToString("_")
+            }
 
     companion object {
 

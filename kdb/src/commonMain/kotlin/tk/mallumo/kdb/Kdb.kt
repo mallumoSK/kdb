@@ -10,7 +10,7 @@ import tk.mallumo.kdb.sqlite.SqliteDB
 
 class Kdb internal constructor(
     private val db: SqliteDB,
-    private val dbDefArray: ArrayList<ImplKdbTableDef>,
+    private val dbDefArray: MutableList<ImplKdbTableDef>,
     private val isDebug: Boolean
 ) {
 
@@ -18,7 +18,7 @@ class Kdb internal constructor(
         fun newInstance(
             sqlite: SqliteDB,
             isDebug: Boolean,
-            dbDefArray: ArrayList<ImplKdbTableDef>
+            dbDefArray: MutableList<ImplKdbTableDef>
         ): Kdb = Kdb(sqlite, dbDefArray, isDebug)
 
         internal val kdbLock = Mutex()

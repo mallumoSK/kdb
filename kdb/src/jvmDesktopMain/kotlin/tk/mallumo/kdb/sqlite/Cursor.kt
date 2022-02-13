@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package tk.mallumo.kdb.sqlite
 
 import tk.mallumo.kdb.tryPrint
@@ -24,7 +26,7 @@ actual class Cursor(val query: ResultSet) : Closeable {
         else (1..columnsCount).map {
             query.metaData
                 .getColumnLabel(it)
-                .toLowerCase(Locale.getDefault())
+                .lowercase(Locale.getDefault())
         }.toTypedArray()
 
     actual val size: Int = itemsCount

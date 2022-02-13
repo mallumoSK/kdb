@@ -22,7 +22,7 @@ class KdbProcessor(
     private var invoked: Boolean = false
 ) : SymbolProcessor {
 
-    var mode = options["KdbMode"] ?: throw RuntimeException(errProjectMode)
+    private var mode = options["KdbMode"] ?: throw RuntimeException(errProjectMode)
 
     companion object {
         const val packageOut = "tk.mallumo.kdb"
@@ -33,11 +33,11 @@ class KdbProcessor(
     private fun getDclarations(resolver: Resolver, annotationClass: String) =
         resolver.getSymbolsWithAnnotation(annotationClass) // symbols with annotation
 
-    val tableNodes = hashMapOf<String, TableNode>()
-    val queryNodes = hashMapOf<String, TableNode>()
-    val allNodes = hashMapOf<String, TableNode>()
+    private val tableNodes = hashMapOf<String, TableNode>()
+    private val queryNodes = hashMapOf<String, TableNode>()
+    private val allNodes = hashMapOf<String, TableNode>()
 
-    val cache = File("/tmp/___/cache-x").apply {
+    private val cache = File("/tmp/___/cache-x").apply {
         if (!exists()) createNewFile()
     }
 
@@ -172,6 +172,7 @@ import tk.mallumo.kdb.sqlite.SqliteDB"""
         }
     }
 
+    @Suppress("EXPERIMENTAL_IS_NOT_ENABLED")
     @OptIn(ExperimentalContracts::class)
     private fun output(
         name: String,
