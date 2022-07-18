@@ -10,6 +10,10 @@ kotlin_version = '1.7.10'
 ksp = 1.7.10-1.0.6
 
 //Previous
+kotlin_version = '1.7.0'
+ksp = 1.7.0-1.0.6
+
+//Previous
 kotlin_version = '1.6.10'
 ksp = 1.6.10-1.0.2
 
