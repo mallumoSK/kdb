@@ -5,10 +5,10 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.6.10-1.0.2-1.3.0"
+version = "1.7.10-1.0.6-1.4.0"
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing-api:1.6.10-1.0.2")
+    api("com.google.devtools.ksp:symbol-processing-api:1.7.10-1.0.6")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

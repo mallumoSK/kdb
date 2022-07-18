@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "tk.mallumo"
-version = "1.6.10-1.0.2-1.3.2"
+version = "1.7.10-1.0.6-1.4.0"
 
 android {
     compileSdk = 30
@@ -36,7 +36,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.3")
             }
         }
 

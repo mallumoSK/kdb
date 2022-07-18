@@ -6,6 +6,10 @@
 
 ```
 //Current version
+kotlin_version = '1.7.10'
+ksp = 1.7.10-1.0.6
+
+//Previous
 kotlin_version = '1.6.10'
 ksp = 1.6.10-1.0.2
 
@@ -123,7 +127,7 @@ kdb.update.test_table(where = "item_string = 'b'",
 
 ```groovy
 plugins {
-  id("com.google.devtools.ksp") version "1.6.10-1.0.2"
+  id("com.google.devtools.ksp") version "1.7.10-1.0.6"
 }
 
 //...
