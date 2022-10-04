@@ -9,3 +9,4 @@ rootProject.name = "kdb"
 include(":kdb-ksp")
 include(":kdb")
 include(":app")
+include("test-desktop")

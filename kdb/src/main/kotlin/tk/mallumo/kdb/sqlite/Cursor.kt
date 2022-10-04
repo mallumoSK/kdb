@@ -2,11 +2,11 @@
 
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.tryPrint
-import java.io.Closeable
+import tk.mallumo.kdb.*
+import java.io.*
 import java.util.*
 
-@Suppress("unused", "UNUSED_PARAMETER")
+@Suppress("unused")
 actual class Cursor(val query: android.database.Cursor) : Closeable {
 
     actual val columns: Array<String> = query.columnNames.map {

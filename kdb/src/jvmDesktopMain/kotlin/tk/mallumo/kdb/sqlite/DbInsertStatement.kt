@@ -2,9 +2,9 @@
 
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.tryIgnore
+import tk.mallumo.kdb.*
 
-@Suppress("unused", "UNUSED_PARAMETER")
+@Suppress("unused")
 actual class DbInsertStatement actual constructor(val db: SqliteDB, command: String) {
 
     private val statement = db.conn!!.prepareStatement(command)

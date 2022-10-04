@@ -2,12 +2,12 @@
 
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.tryPrint
-import java.io.Closeable
-import java.sql.ResultSet
+import tk.mallumo.kdb.*
+import java.io.*
+import java.sql.*
 import java.util.*
 
-@Suppress("unused", "UNUSED_PARAMETER")
+@Suppress("unused")
 actual class Cursor(val query: ResultSet) : Closeable {
 
     private val columnsCount = query.metaData.columnCount

@@ -2,10 +2,13 @@
 
 package tk.mallumo.kdb.sqlite
 
-import android.database.sqlite.SQLiteStatement
+import android.database.sqlite.*
 
-@Suppress("unused", "UNUSED_PARAMETER")
-actual class DbInsertStatement actual constructor(@Suppress("MemberVisibilityCanBePrivate") val db: SqliteDB, command: String) {
+@Suppress("unused")
+actual class DbInsertStatement actual constructor(
+    @Suppress("MemberVisibilityCanBePrivate") val db: SqliteDB,
+    command: String
+) {
 
     private val statement: SQLiteStatement
 

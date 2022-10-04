@@ -1,12 +1,9 @@
 package tk.mallumo.kdb.ksp
 
 import com.google.devtools.ksp.processing.*
-import com.google.devtools.ksp.symbol.KSAnnotated
-import com.google.devtools.ksp.symbol.KSClassDeclaration
-import java.io.File
-import kotlin.contracts.ExperimentalContracts
-import kotlin.contracts.InvocationKind
-import kotlin.contracts.contract
+import com.google.devtools.ksp.symbol.*
+import java.io.*
+import kotlin.contracts.*
 
 class KdbProcessorProvider : SymbolProcessorProvider {
     override fun create(
@@ -22,12 +19,8 @@ class KdbProcessor(
     private var invoked: Boolean = false
 ) : SymbolProcessor {
 
-    private var mode = options["KdbMode"] ?: throw RuntimeException(errProjectMode)
-
     companion object {
         const val packageOut = "tk.mallumo.kdb"
-        private const val errProjectMode =
-            "Inside yours gradle.build must be defined mode (ANDROID, JVM-DESKTOP): 'ksp.arg(\"KdbMode\", \"ANDROID\")'"
     }
 
     private fun getDclarations(resolver: Resolver, annotationClass: String) =
@@ -95,7 +88,7 @@ class KdbProcessor(
                 dependencies = dependenciesAll,
                 imports = ""
             ) {
-                generateCreator(mode)
+                generateCreator()
             }
 
             output(

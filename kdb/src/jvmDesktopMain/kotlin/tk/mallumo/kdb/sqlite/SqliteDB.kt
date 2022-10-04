@@ -1,13 +1,11 @@
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.log
-import tk.mallumo.kdb.tryIgnore
-import java.sql.Connection
-import java.sql.ResultSet
+import tk.mallumo.kdb.*
+import java.sql.*
 
 @Suppress("unused", "UNUSED_PARAMETER")
 actual class SqliteDB(
-    private val isDebug: Boolean,
+    val isDebug: Boolean,
     isSqLite: Boolean,
     private val connectionCallback: () -> Connection
 ) {

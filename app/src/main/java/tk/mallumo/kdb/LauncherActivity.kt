@@ -1,7 +1,8 @@
 package tk.mallumo.kdb
 
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.*
+import androidx.lifecycle.*
+import tk.mallumo.kdb.sqlite.*
 
 @KdbTable
 open class TEST_TABLE(
@@ -19,7 +20,9 @@ open class BindingTEST_TABLE(var x: Double = 1.3) : TEST_TABLE()
 @KdbQI
 open class BindingTEST(var xyz: String = "")
 
-val kdb by lazy { createKDB(MainApplication.instance) }
+val kdb by lazy {
+    Kdb.get(SqliteDB(isDebug = true, dbPath = MainApplication.instance.defaultSqLitePath()))
+}
 
 class LauncherActivity : AppCompatActivity() {
 

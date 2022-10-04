@@ -1,5 +1,5 @@
 package tk.mallumo.kdb
 
-import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.*
 
-internal expect val coroutineKdbDispatcher: CoroutineDispatcher
+internal val coroutineKdbDispatcher = Dispatchers.IO

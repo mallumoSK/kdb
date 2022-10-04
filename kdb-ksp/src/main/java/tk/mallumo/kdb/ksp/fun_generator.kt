@@ -1,37 +1,14 @@
 package tk.mallumo.kdb.ksp
 
-object KdbMode {
-    const val ANDROID = "ANDROID"
-    const val JVM_DESKTOP = "JVM-DESKTOP"
-}
-
-fun generateCreator(mode: String) = buildString {
-    append("private val databases = hashMapOf<String,Kdb>()\n")
-    when (mode) {
-        KdbMode.ANDROID -> {
-            append(
-                """
-fun createKDB(context:android.content.Context, name:String="default-kdb.sqlite",isDebug: Boolean = true):Kdb{
-        return databases.getOrPut(name){
-           Kdb.newInstance(tk.mallumo.kdb.sqlite.SqliteDB(isDebug, context.getDatabasePath(name).absolutePath), isDebug, KdbGeneratedDefStructure.getTablesDef())
+fun generateCreator() = """
+private val databases = hashMapOf<String,Kdb>()
+ 
+fun Kdb.Companion.get(sqlite:tk.mallumo.kdb.sqlite.SqliteDB):Kdb{
+        return databases.getOrPut(sqlite.path){
+           Kdb.newInstance(sqlite, sqlite.isDebug, KdbGeneratedDefStructure.getTablesDef())
         }
 }   
 """
-            )
-        }
-        KdbMode.JVM_DESKTOP -> {
-            append(
-                """
-fun createKDB(name:String, isDebug: Boolean = true, connectionCallback:() -> java.sql.Connection):Kdb{
-        return databases.getOrPut(name){
-            Kdb.newInstance(tk.mallumo.kdb.sqlite.SqliteDB(isDebug, true, connectionCallback), isDebug, KdbGeneratedDefStructure.getTablesDef())
-        }
-}    
-"""
-            )
-        }
-    }
-}
 
 fun generateDefStructure(
     map: List<TableNode>
@@ -160,9 +137,11 @@ fun generateInsertFunctions(
                 prop.qualifiedName == "kotlin.Float" -> {
                     "\t\t\t\t\tit.${prop.cursorTypeName}($index) { item.${prop.propertyName}.toDouble() }"
                 }
+
                 PropertyTypeHolder.directTypes.none { it == prop.qualifiedName } -> {
                     "\t\t\t\t\tit.${prop.cursorTypeName}($index) { item.${prop.propertyName}.toString() }"
                 }
+
                 else -> {
                     "\t\t\t\t\tit.${prop.cursorTypeName}($index) { item.${prop.propertyName} }"
                 }

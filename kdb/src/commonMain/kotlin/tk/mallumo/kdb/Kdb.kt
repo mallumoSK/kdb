@@ -1,11 +1,10 @@
-@file:Suppress("unused", "RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
+@file:Suppress("unused")
 
 package tk.mallumo.kdb
 
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
-import tk.mallumo.kdb.sqlite.SqliteDB
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.*
+import tk.mallumo.kdb.sqlite.*
 
 
 class Kdb internal constructor(
@@ -15,6 +14,10 @@ class Kdb internal constructor(
 ) {
 
     companion object {
+        @Deprecated(
+            message = "use Kdb.Companion.newInstance(sqlite: SqliteDB, isDebug: Boolean)",
+            replaceWith = ReplaceWith("get")
+        )
         fun newInstance(
             sqlite: SqliteDB,
             isDebug: Boolean,

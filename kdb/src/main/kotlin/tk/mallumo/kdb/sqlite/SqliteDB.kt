@@ -1,11 +1,13 @@
 package tk.mallumo.kdb.sqlite
 
-import android.database.sqlite.SQLiteDatabase
-import tk.mallumo.kdb.log
-import tk.mallumo.kdb.tryIgnore
+import android.content.*
+import android.database.sqlite.*
+import tk.mallumo.kdb.*
 
-@Suppress("unused", "UNUSED_PARAMETER")
-actual class SqliteDB(private val isDebug: Boolean, dbPath: String) {
+fun Context.defaultSqLitePath(name: String = "default-kdb.sqlite"): String = getDatabasePath(name).absolutePath
+
+@Suppress("unused")
+actual class SqliteDB(val isDebug: Boolean, dbPath: String) {
 
     actual val path: String = dbPath
 
