@@ -5,6 +5,7 @@
 ## KDB-KSP: ![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb-ksp/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml&style=for-the-badge "Version")
 
 ```
+
 //Current version
 kotlin_version = '1.7.0'
 ksp = 1.7.0-1.0.6
@@ -88,9 +89,23 @@ open class BindingTEST(var xyz: String = "")
 
 ### Instance of database
 ```kotlin
-import tk.mallumo.kdb.createKDB
+import tk.mallumo.kdb
 
-val kdb by lazy { createKDB(MainApplication.instance) }
+
+// ANDROID:
+val kdb by lazy {
+    Kdb.get(SqliteDB(isDebug = true, dbPath = applicationContext.defaultSqLitePath()))
+}
+
+//DESKTOP:
+val kdb: Kdb by lazy {
+    Kdb.get(SqliteDB(isDebug = true, isSqLite = true) {
+        DriverManager.getConnection("jdbc:sqlite:/tmp/test.sqlite").apply {
+            autoCommit = false
+        }
+    })
+
+}
 ```
 
 ### Insert, Query, Delete, Update
@@ -144,18 +159,15 @@ repositories {
     url = uri("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
   }
 }
-
-//if android:
-ksp.arg("KdbMode", "ANDROID")
-
-//if desktop:
-ksp.arg("KdbMode", "JVM-DESKTOP")
-
 //...
 
 dependencies {
   implementation "tk.mallumo:kdb:x.y.z"
   ksp "tk.mallumo:kdb-ksp:x.y.z"
+    
+  //    in case of desktop add:
+  implementation("org.xerial:sqlite-jdbc:x.x.x")
+
 }
 ```
 
