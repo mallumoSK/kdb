@@ -1,19 +1,22 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     kotlin("jvm")
-    `maven-publish`
-    `java-library`
+}
+
+val toolkit by lazy {
+    Toolkit.get(extensions = extensions.extraProperties)
 }
 
 group = "tk.mallumo"
-version = "1.7.0-1.0.6-1.5.0"
+version = toolkit["version.kdb"]
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing-api:1.7.0-1.0.6")
+    api("com.google.devtools.ksp:symbol-processing-api:1.7.20-1.0.7")
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+apply("../secure.gradle")
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions.jvmTarget = "11"
 }
-apply("../secure-ksp.gradle")

@@ -1,3 +1,0 @@
-ksp {
-    arg("KdbMode", "JVM-DESKTOP")
-}

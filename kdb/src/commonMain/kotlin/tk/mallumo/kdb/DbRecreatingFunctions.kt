@@ -2,6 +2,7 @@ package tk.mallumo.kdb
 
 import kotlinx.coroutines.coroutineScope
 import tk.mallumo.kdb.sqlite.SqliteDB
+import tk.mallumo.log.logINFO
 
 internal object DbRecreatingFunctions {
 
@@ -67,10 +68,10 @@ internal object DbRecreatingFunctions {
 
                 alterColumn.forEach {
                     try {
-                        if (debug) log("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}")
+                        if (debug) logINFO("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}")
                         db.exec("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}")
                     } catch (e: Exception) {
-                        if (debug) log(
+                        if (debug) logINFO(
                             e.message
                                 ?: "ERR: ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}"
                         )
@@ -100,10 +101,10 @@ internal object DbRecreatingFunctions {
             }
         }
         if (writeChanges) {
-            if (debug) log("WRITING DATABASE CHANGES")
+            if (debug) logINFO("WRITING DATABASE CHANGES")
             writeNewDbDef(db, newDefinitionArr)
         } else {
-            if (debug) log("NO DATABASE CHANGES")
+            if (debug) logINFO("NO DATABASE CHANGES")
         }
     }
 
@@ -210,10 +211,10 @@ internal object DbRecreatingFunctions {
                         table.columns.add(ImplKdbTableDef.Item(it.uppercase()))
                     }
                 }
-                if (debug) log("RECREATING TABLE ${def.name} FOUND")
+                if (debug) logINFO("RECREATING TABLE ${def.name} FOUND")
                 oldDef.add(table)
             } catch (e: Exception) {
-                if (debug) log("RECREATING TABLE ${def.name} NOT FOUND")
+                if (debug) logINFO("RECREATING TABLE ${def.name} NOT FOUND")
             }
 
         }

@@ -1,61 +1,59 @@
 plugins {
-    id("com.android.library")
     kotlin("multiplatform")
-    id("maven-publish")
+    id("com.android.library")
+}
+
+val toolkit by lazy {
+    Toolkit.get(extensions = extensions.extraProperties)
 }
 
 group = "tk.mallumo"
-version = "1.7.0-1.0.6-1.5.0"
+version = toolkit["version.kdb"]
 
-android {
-    compileSdk = 30
-
-    defaultConfig {
-        minSdk = 21
-        targetSdk = 30
+kotlin {
+    jvm("desktop") {
+        compilations.all {
+            kotlinOptions.jvmTarget = "11"
+        }
     }
-
-    configurations {
-        create("androidTestApi")
-        create("androidTestDebugApi")
-        create("androidTestReleaseApi")
-        create("testApi")
-        create("testDebugApi")
-        create("testReleaseApi")
+    android{
+        publishLibraryVariants("release")
+        publishLibraryVariantsGroupedByFlavor = true
+    }
+    sourceSets {
+        @Suppress("UNUSED_VARIABLE") val commonMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${toolkit["version.coroutines"]}")
+//                api("com.google.code.gson:gson:${toolkit["version.gson"]}")
+                api("tk.mallumo:log:${toolkit["version.log"]}")
+                api("tk.mallumo:utils:${toolkit["version.utils"]}")
+            }
+        }
+        @Suppress("UNUSED_VARIABLE") val desktopMain by getting
+        @Suppress("UNUSED_VARIABLE") val androidMain by getting
     }
 }
 
-kotlin {
-    jvm("jvmDesktop")
-    android {
-        publishLibraryVariants("release", "debug")
-        publishLibraryVariantsGroupedByFlavor = true
+android {
+    compileSdkVersion(31)
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    defaultConfig {
+        minSdkVersion(21)
+        targetSdkVersion(31)
     }
-
-    sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-stdlib")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-            }
-        }
-
-        val jvmDesktopMain by getting {
-            dependencies {
-                dependsOn(commonMain)
-            }
-        }
-
-        all {
-            languageSettings.optIn("kotlin.RequiresOptIn")
-        }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
-
+    lintOptions.isAbortOnError = false
+    lintOptions.isCheckReleaseBuilds = false
+    lintOptions.disable("TypographyFractions", "TypographyQuotes")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
+
 apply("../secure.gradle")

@@ -1,31 +1,33 @@
-import org.jetbrains.kotlin.gradle.tasks.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm")// version "1.7.0"
-    id("com.google.devtools.ksp") version "1.7.0-1.0.6"
+    kotlin("jvm")
+    application
+    id("com.google.devtools.ksp")
 }
 
-group = "org.example"
-version = "unspecified"
-
-repositories {
-    mavenCentral()
-    maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
-    maven("/tmp/___/")
-}
+group = "tk.mallumo"
+version = "1.0"
 
 dependencies {
-    implementation(kotlin("stdlib"))
-    ksp(project(":kdb-ksp"))
     implementation(project(":kdb"))
+    ksp(project(":kdb-ksp"))
     implementation("org.xerial:sqlite-jdbc:3.39.3.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-
 }
 
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+}
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "11"
 }
 
+
+application {
+    mainClass.set("test.MainKt")
+}

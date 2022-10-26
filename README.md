@@ -7,10 +7,13 @@
 ```
 
 //Current version
+kotlin_version = '1.7.20'
+ksp = 1.7.20-1.0.7
+
+//Previous
 kotlin_version = '1.7.0'
 ksp = 1.7.0-1.0.6
 
-//Previous
 kotlin_version = '1.6.10'
 ksp = 1.6.10-1.0.2
 
@@ -141,33 +144,42 @@ kdb.update.test_table(where = "item_string = 'b'",
 1. add plugin (**build.gradle**)
 
 ```groovy
+# ANDROID
 plugins {
-  id("com.google.devtools.ksp") version "1.7.10-1.0.6"
+    id("com.google.devtools.ksp")
 }
 
 //...
-
-android{
-  //...
-  sourceSets.main.java.srcDirs += ['build/generated/ksp/debug/kotlin']
+android {
+    sourceSets.apply {
+        getByName("debug") {
+            java.srcDirs("build/generated/ksp/debug/kotlin")
+        }
+        getByName("release") {
+            java.srcDirs("build/generated/ksp/release/kotlin")
+        }
+    }
 }
 
-//...
+# DESKTOP
+kotlin {
+    sourceSets.main {
+        kotlin.srcDir("build/generated/ksp/main/kotlin")
+    }
+}
+```
+
+```groovy
+dependencies {
+    ksp("tk.mallumo:kdb-ksp:+")
+    implementation("tk.mallumo:kdb:+"))
+
+    //    in case of desktop add:
+    implementation("org.xerial:sqlite-jdbc:x.x.x")
+}
 
 repositories {
-  maven {
-    url = uri("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
-  }
-}
-//...
-
-dependencies {
-  implementation "tk.mallumo:kdb:x.y.z"
-  ksp "tk.mallumo:kdb-ksp:x.y.z"
-    
-  //    in case of desktop add:
-  implementation("org.xerial:sqlite-jdbc:x.x.x")
-
+    maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
 }
 ```
 
