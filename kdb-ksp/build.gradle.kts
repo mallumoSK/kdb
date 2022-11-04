@@ -15,7 +15,7 @@ dependencies {
     api("com.google.devtools.ksp:symbol-processing-api:1.7.20-1.0.7")
 }
 
-apply("../secure.gradle")
+apply("../secure-ksp.gradle")
 
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
