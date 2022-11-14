@@ -8,29 +8,7 @@
 
 //Current version
 kotlin_version = '1.7.20'
-ksp = 1.7.20-1.0.7
-
-//Previous
-kotlin_version = '1.7.0'
-ksp = 1.7.0-1.0.6
-
-kotlin_version = '1.6.10'
-ksp = 1.6.10-1.0.2
-
-//Previous
-kotlin_version = '1.5.10'
-ksp = 1.5.10-1.0.0-beta01
-
-//Previous
-kotlin_version = '1.4.32'
-kdb = 1.1.0
-kdb-ksp = 1.1.0
-ksp = 1.4.32-1.0.0-alpha07
-
-//Previous
-kotlin_version = '1.4.31'
-kdb = 1.0.1
-kdb-ksp = 1.0.1
+ksp = 1.7.20-1.0.8
 ```
 
 * sqlite wrapper for desktop and mobile
@@ -44,16 +22,20 @@ kdb-ksp = 1.0.1
 * no reflection
 * no kapt
 * fast
-* can be used for android and jvm-desktop in future ios too
+* can be used for android and jvm-desktop
 * direct work with objects
 * automatic generating suspend extension function of (query, insert, update, delete)
 * all functions work on ``Dispatchers.IO`` and synchronized by ``kotlinx.coroutines.sync.Mutex``
 * **automatic database changes without programmer interaction:**
-  * add table
-  * add/remove column
-  * change column type
-  * apply/remove colmum index
-  * apply/remove colmum unique identifier
+    * add table
+    * add/remove column
+    * change column type
+    * apply/remove colmum index
+    * apply/remove colmum unique identifier
+    * generating common code with gradle params:
+        * see test-desktop/build.gradle.kts
+            * kotlin.srcDir("build/generated/ksp/common/commonMain/kotlin")
+            * ksp.arg("commonSourcesOnly" , "true")
 
 ## Rules
 * table objects must have empty constructor
@@ -144,7 +126,7 @@ kdb.update.test_table(where = "item_string = 'b'",
 1. add plugin (**build.gradle**)
 
 ```groovy
-# ANDROID
+// ANDROID
 plugins {
     id("com.google.devtools.ksp")
 }
@@ -161,7 +143,7 @@ android {
     }
 }
 
-# DESKTOP
+// DESKTOP
 kotlin {
     sourceSets.main {
         kotlin.srcDir("build/generated/ksp/main/kotlin")
@@ -172,7 +154,7 @@ kotlin {
 ```groovy
 dependencies {
     ksp("tk.mallumo:kdb-ksp:+")
-    implementation("tk.mallumo:kdb:+"))
+    implementation("tk.mallumo:kdb:+")
 
     //    in case of desktop add:
     implementation("org.xerial:sqlite-jdbc:x.x.x")

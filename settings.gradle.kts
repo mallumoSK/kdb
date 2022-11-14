@@ -3,7 +3,6 @@ pluginManagement {
         google()
         gradlePluginPortal()
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
     }
     plugins {
@@ -15,13 +14,12 @@ pluginManagement {
         id("com.google.devtools.ksp").version(extra["version.ksp"] as String)
     }
 }
-
+@Suppress("UnstableApiUsage")
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
     }
 }
