@@ -1,4 +1,4 @@
-import org.gradle.api.plugins.ExtraPropertiesExtension
+import org.gradle.api.plugins.*
 
 class Toolkit private constructor(private val properties: ExtraPropertiesExtension) {
     companion object {
@@ -11,7 +11,10 @@ class Toolkit private constructor(private val properties: ExtraPropertiesExtensi
         }
     }
 
-    operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): String =  get(property.name)
+    operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): String = get(property.name)
 
-    operator fun get(key:String):String = properties[key.replace("_", ".")]?.toString()!!
+    operator fun get(key: String): String = (
+        properties.runCatching { get(key) }.getOrNull()
+            ?: properties.runCatching { get(key.replace("_", ".")) }.getOrNull()
+            ?: properties.runCatching { get(key.replace(".", "_")) }.getOrNull())?.toString()!!
 }

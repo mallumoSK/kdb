@@ -12,11 +12,11 @@ group = "tk.mallumo"
 version = toolkit["version.kdb"]
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing-api:1.7.20-1.0.7")
+    api("com.google.devtools.ksp:symbol-processing-api:${toolkit["version.ksp"]}")
 }
 
 apply("../secure-ksp.gradle")
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
+    kotlinOptions.jvmTarget = "1.8"
 }

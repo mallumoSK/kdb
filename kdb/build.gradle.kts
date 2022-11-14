@@ -13,7 +13,7 @@ version = toolkit["version.kdb"]
 kotlin {
     jvm("desktop") {
         compilations.all {
-            kotlinOptions.jvmTarget = "11"
+            kotlinOptions.jvmTarget = "1.8"
         }
     }
     android{
@@ -24,7 +24,6 @@ kotlin {
         @Suppress("UNUSED_VARIABLE") val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${toolkit["version.coroutines"]}")
-//                api("com.google.code.gson:gson:${toolkit["version.gson"]}")
                 api("tk.mallumo:log:${toolkit["version.log"]}")
                 api("tk.mallumo:utils:${toolkit["version.utils"]}")
             }
@@ -34,25 +33,31 @@ kotlin {
     }
 }
 
+@Suppress("UnstableApiUsage")
 android {
-    compileSdkVersion(31)
+    compileSdk = 33
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
-        minSdkVersion(21)
-        targetSdkVersion(31)
+        minSdk = 21
+        targetSdk = 33
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+    namespace = "tk.mallumo.kdb"
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
+        disable += setOf("TypographyFractions", "TypographyQuotes")
     }
-    lintOptions.isAbortOnError = false
-    lintOptions.isCheckReleaseBuilds = false
-    lintOptions.disable("TypographyFractions", "TypographyQuotes")
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "1.8"
+    }
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(8))
     }
 }
 

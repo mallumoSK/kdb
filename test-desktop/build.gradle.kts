@@ -24,7 +24,7 @@ kotlin {
 
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
-    jvmTarget = "11"
+    jvmTarget = "1.8"
 }
 
 
