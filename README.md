@@ -4,19 +4,13 @@
 
 ## KDB-KSP: ![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb-ksp/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml&style=for-the-badge "Version")
 
-```
 
-//Current version
-kotlin_version = '1.7.20'
-ksp = 1.7.20-1.0.8
-```
-
-* sqlite wrapper for desktop and mobile
-* Similiar to [ROOM](https://developer.android.com/jetpack/androidx/releases/room?hl=en) **BUT**
+* sqlite wrapper for desktop and android
+* Similar to [ROOM](https://developer.android.com/jetpack/androidx/releases/room?hl=en) **BUT**
   * faster compilation time
   * faster runtime
   * simply to use
-  * automatic database changes except rename column -> NEVER DO THAT
+  * automatic database changes except rename column -> **NEVER DO THAT**
 
 ## About
 * no reflection
@@ -25,7 +19,12 @@ ksp = 1.7.20-1.0.8
 * can be used for android and jvm-desktop
 * direct work with objects
 * automatic generating suspend extension function of (query, insert, update, delete)
-* all functions work on ``Dispatchers.IO`` and synchronized by ``kotlinx.coroutines.sync.Mutex``
+* all tasks are synchronized by ``kotlinx.coroutines.sync.Mutex``
+* you can use yours own jdbc implementations for other database engines, by custom implementation of ``tk.mallumo.kdb.sqlite.SqliteDB``, ``tk.mallumo.kdb.sqlite.Cursor``, ``tk.mallumo.kdb.sqlite.DbInsertStatement`` 
+  * mysql
+  * oracle
+  * ...
+  
 * **automatic database changes without programmer interaction:**
     * add table
     * add/remove column
@@ -126,12 +125,12 @@ kdb.update.test_table(where = "item_string = 'b'",
 1. add plugin (**build.gradle**)
 
 ```groovy
-// ANDROID
 plugins {
-    id("com.google.devtools.ksp")
+    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
 }
-
-//...
+```
+```groovy
+// ANDROID
 android {
     sourceSets.apply {
         getByName("debug") {
@@ -153,11 +152,11 @@ kotlin {
 
 ```groovy
 dependencies {
-    ksp("tk.mallumo:kdb-ksp:+")
-    implementation("tk.mallumo:kdb:+")
+    ksp("tk.mallumo:kdb-ksp:<version>")
+    implementation("tk.mallumo:kdb:<version>")
 
     //    in case of desktop add:
-    implementation("org.xerial:sqlite-jdbc:x.x.x")
+    implementation("org.xerial:sqlite-jdbc:<version>")
 }
 
 repositories {
@@ -170,10 +169,20 @@ repositories {
 pluginManagement {
   repositories {
     gradlePluginPortal()
-    google()
-    mavenCentral()
   }
 }
 ```
 
-3. JOB DONE :)
+3. add first table-class qith annotation of ``@KdbTable``
+```kotlin
+@KdbTable
+class TEST_TABLE(
+    var xyz: String = ""
+)
+```
+
+4. build application or run gradle task whitch starts with **ksp** etc. ``kspKotlin``, ``kspDebugKotlin``, ...  
+4.1 all functions (instance of database, insert, update, delete, query ) will be generated automatically
+
+ 
+5. JOB DONE :)
