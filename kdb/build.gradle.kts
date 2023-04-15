@@ -3,6 +3,7 @@
 plugins {
     kotlin("multiplatform") version "1.8.0" apply true
     id("com.android.library")
+    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
 val toolkit by lazy {

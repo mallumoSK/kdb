@@ -1,0 +1,120 @@
+public final class tk/mallumo/kdb/ksp/Fun_generatorKt {
+	public static final fun generateCreator ()Ljava/lang/String;
+	public static final fun generateCursorFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateDefStructure (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateExtCursorFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateExtDeleteFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateExtInsertFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateExtUpdateFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateFillFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateIndexFunctions (Ljava/util/List;)Ljava/lang/String;
+	public static final fun generateInsertFunctions (Ljava/util/List;)Ljava/lang/String;
+}
+
+public final class tk/mallumo/kdb/ksp/KdbProcessor : com/google/devtools/ksp/processing/SymbolProcessor {
+	public static final field Companion Ltk/mallumo/kdb/ksp/KdbProcessor$Companion;
+	public static final field basePackage Ljava/lang/String;
+	public fun <init> (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;Z)V
+	public synthetic fun <init> (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;ZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public fun finish ()V
+	public fun process (Lcom/google/devtools/ksp/processing/Resolver;)Ljava/util/List;
+}
+
+public final class tk/mallumo/kdb/ksp/KdbProcessor$Companion {
+}
+
+public final class tk/mallumo/kdb/ksp/KdbProcessorProvider : com/google/devtools/ksp/processing/SymbolProcessorProvider {
+	public fun <init> ()V
+	public fun create (Lcom/google/devtools/ksp/processing/SymbolProcessorEnvironment;)Lcom/google/devtools/ksp/processing/SymbolProcessor;
+}
+
+public final class tk/mallumo/kdb/ksp/KdbTableDef {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/util/ArrayList;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/util/ArrayList;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getColumns ()Ljava/util/ArrayList;
+	public final fun getName ()Ljava/lang/String;
+	public final fun setName (Ljava/lang/String;)V
+}
+
+public final class tk/mallumo/kdb/ksp/KdbTableDef$ColumnType {
+	public static final field BIGINT Ljava/lang/String;
+	public static final field DOUBLE Ljava/lang/String;
+	public static final field INSTANCE Ltk/mallumo/kdb/ksp/KdbTableDef$ColumnType;
+	public static final field INTEGER Ljava/lang/String;
+	public static final field NUMERIC Ljava/lang/String;
+	public static final field TEXT Ljava/lang/String;
+	public static final field UNDEFINED Ljava/lang/String;
+}
+
+public final class tk/mallumo/kdb/ksp/KdbTableDef$Item {
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Z
+	public final fun component5 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZ)Ltk/mallumo/kdb/ksp/KdbTableDef$Item;
+	public static synthetic fun copy$default (Ltk/mallumo/kdb/ksp/KdbTableDef$Item;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZILjava/lang/Object;)Ltk/mallumo/kdb/ksp/KdbTableDef$Item;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getDefaultValue ()Ljava/lang/String;
+	public final fun getIndex ()Z
+	public final fun getName ()Ljava/lang/String;
+	public final fun getType ()Ljava/lang/String;
+	public final fun getUnique ()Z
+	public fun hashCode ()I
+	public final fun setDefaultValue (Ljava/lang/String;)V
+	public final fun setIndex (Z)V
+	public final fun setName (Ljava/lang/String;)V
+	public final fun setType (Ljava/lang/String;)V
+	public final fun setUnique (Z)V
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tk/mallumo/kdb/ksp/PropertyTypeHolder {
+	public static final field Companion Ltk/mallumo/kdb/ksp/PropertyTypeHolder$Companion;
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZ)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()Ljava/lang/String;
+	public final fun component4 ()Ljava/lang/String;
+	public final fun component5 ()Ljava/lang/String;
+	public final fun component6 ()Z
+	public final fun component7 ()Z
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZ)Ltk/mallumo/kdb/ksp/PropertyTypeHolder;
+	public static synthetic fun copy$default (Ltk/mallumo/kdb/ksp/PropertyTypeHolder;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;ZZILjava/lang/Object;)Ltk/mallumo/kdb/ksp/PropertyTypeHolder;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getCursorTypeName ()Ljava/lang/String;
+	public final fun getDefaultValue ()Ljava/lang/String;
+	public final fun getPropertyName ()Ljava/lang/String;
+	public final fun getQualifiedName ()Ljava/lang/String;
+	public final fun getSqlColumnTypeName ()Ljava/lang/String;
+	public fun hashCode ()I
+	public final fun isIndex ()Z
+	public final fun isUnique ()Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tk/mallumo/kdb/ksp/PropertyTypeHolder$Companion {
+	public final fun get (Lcom/google/devtools/ksp/symbol/KSPropertyDeclaration;)Ltk/mallumo/kdb/ksp/PropertyTypeHolder;
+	public final fun getDirectTypes ()[Ljava/lang/String;
+}
+
+public final class tk/mallumo/kdb/ksp/TableNode {
+	public static final field Companion Ltk/mallumo/kdb/ksp/TableNode$Companion;
+	public fun <init> (Lcom/google/devtools/ksp/symbol/KSClassDeclaration;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/sequences/Sequence;Ljava/util/List;)V
+	public synthetic fun <init> (Lcom/google/devtools/ksp/symbol/KSClassDeclaration;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Lkotlin/sequences/Sequence;Ljava/util/List;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getFiles ()Ljava/util/List;
+	public final fun getFunctionName ()Ljava/lang/String;
+	public final fun getNiceClassName ()Ljava/lang/String;
+	public final fun getProperty ()Lkotlin/sequences/Sequence;
+	public final fun getQualifiedName ()Ljava/lang/String;
+	public final fun getSimpleName ()Ljava/lang/String;
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class tk/mallumo/kdb/ksp/TableNode$Companion {
+}
+

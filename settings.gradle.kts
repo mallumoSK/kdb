@@ -6,16 +6,16 @@ pluginManagement {
         maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
     }
 
-    @Suppress("FunctionName")
-    infix fun PluginDependencySpec._version(key: String): PluginDependencySpec = version(extra[key] as String)
+    infix fun PluginDependencySpec.ofVersion(key: String): PluginDependencySpec = version(extra[key] as String)
 
     plugins {
-        kotlin("multiplatform") _version "version.kotlin"
-        kotlin("jvm") _version "version.kotlin"
-        kotlin("android") _version "version.kotlin"
-        id("com.android.application") _version "version.agp"
-        id("com.android.library") _version "version.agp"
-        id("com.google.devtools.ksp") _version "version.ksp"
+        kotlin("multiplatform") ofVersion "version.kotlin"
+        kotlin("jvm") ofVersion "version.kotlin"
+        kotlin("android") ofVersion "version.kotlin"
+        id("com.android.application") ofVersion "version.agp"
+        id("com.android.library") ofVersion "version.agp"
+        id("com.google.devtools.ksp") ofVersion "version.ksp"
+        id("org.jetbrains.kotlinx.binary-compatibility-validator") ofVersion "version.binary.compatibility.validator"
     }
 }
 @Suppress("UnstableApiUsage")
