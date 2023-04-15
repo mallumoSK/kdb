@@ -6,16 +6,16 @@
 
 
 * sqlite wrapper for desktop and android
-* Similar to [ROOM](https://developer.android.com/jetpack/androidx/releases/room?hl=en) **BUT**
+* **Main GOALS**
   * faster compilation time
   * faster runtime
   * simply to use
-  * automatic database changes except rename column -> **NEVER DO THAT**
+  * **automatic database changes** based on class annotations, except rename column -> **NEVER DO THAT**
+  * use/write complex query (in runtime or remote delivery)
 
 ## About
 * no reflection
 * no kapt
-* fast
 * can be used for android and jvm-desktop
 * direct work with objects
 * automatic generating suspend extension function of (query, insert, update, delete)
