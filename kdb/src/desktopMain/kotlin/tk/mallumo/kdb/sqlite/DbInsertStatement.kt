@@ -3,7 +3,6 @@
 package tk.mallumo.kdb.sqlite
 
 import tk.mallumo.kdb.*
-import tk.mallumo.utils.tryIgnore
 
 @Suppress("unused")
 actual class DbInsertStatement actual constructor(val db: SqliteDB, command: String) {
@@ -37,7 +36,7 @@ actual class DbInsertStatement actual constructor(val db: SqliteDB, command: Str
         try {
             statement.addBatch()
         } catch (e: Exception) {
-            tryIgnore { statement.close() }
+            runCatching { statement.close() }
             throw e
         }
         executed = true
@@ -55,7 +54,7 @@ actual class DbInsertStatement actual constructor(val db: SqliteDB, command: Str
 
     actual fun close() {
         executed = true
-        tryIgnore { statement.close() }
+        runCatching { statement.close() }
     }
 
 }

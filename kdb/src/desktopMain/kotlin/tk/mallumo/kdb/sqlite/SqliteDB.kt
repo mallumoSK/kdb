@@ -1,8 +1,6 @@
 package tk.mallumo.kdb.sqlite
 
 import tk.mallumo.kdb.*
-import tk.mallumo.log.logINFO
-import tk.mallumo.utils.tryIgnore
 import java.sql.*
 
 @Suppress("unused", "UNUSED_PARAMETER")
@@ -21,7 +19,7 @@ actual class SqliteDB(
     }
 
     actual fun close() {
-        tryIgnore {
+        runCatching {
             conn?.close()
             conn = null
         }
@@ -29,13 +27,13 @@ actual class SqliteDB(
     }
 
     actual fun insert(command: String, body: (DbInsertStatement) -> Unit) {
-        if (isDebug) logINFO(command)
+        if (isDebug) logger(command)
         body(DbInsertStatement(this@SqliteDB, command))
 
     }
 
     actual fun exec(command: String) {
-        if (isDebug) logINFO(command)
+        if (isDebug) logger(command)
         conn?.execSQL(command)
     }
 
@@ -43,7 +41,7 @@ actual class SqliteDB(
         query: String,
         callback: (cursor: Cursor) -> Unit
     ) {
-        if (isDebug) logINFO(query)
+        if (isDebug) logger(query)
         conn?.apply {
             Cursor(rawQuery(query, null)).also {
                 try {
@@ -51,7 +49,7 @@ actual class SqliteDB(
                 } catch (e: Exception) {
                     throw e
                 } finally {
-                    tryIgnore {
+                    runCatching {
                         it.close()
                     }
                 }
@@ -61,13 +59,13 @@ actual class SqliteDB(
     }
 
     actual fun queryUnclosed(query: String): ((Cursor) -> Unit) {
-        if (isDebug) logINFO(query)
+        if (isDebug) logger(query)
         return { Cursor(conn!!.rawQuery(query, null)) }
     }
 
 
     actual fun call(sql: String) {
-        if (isDebug) logINFO(sql)
+        if (isDebug) logger(sql)
         conn?.prepareCall(sql)?.also {
             it.execute()
             it.close()

@@ -3,7 +3,6 @@
 package tk.mallumo.kdb.sqlite
 
 import tk.mallumo.kdb.*
-import tk.mallumo.utils.tryPrint
 import java.io.*
 import java.sql.*
 import java.util.*
@@ -45,23 +44,23 @@ actual class Cursor(val query: ResultSet) : Closeable {
     }
 
     actual fun string(index: Int, callback: (String) -> Unit) {
-        tryPrint {
+        runCatching {
             query.getString(index + 1)?.also {
                 callback.invoke(it)
             }
-        }
+        }.onFailure { it.printStackTrace() }
     }
 
     actual fun int(index: Int, callback: (Int) -> Unit) {
-        tryPrint {
+        runCatching {
             query.getInt(index + 1).also {
                 callback.invoke(it)
             }
-        }
+        }.onFailure { it.printStackTrace() }
     }
 
     actual fun long(index: Int, callback: (Long) -> Unit) {
-        tryPrint {
+        runCatching {
             query.getLong(index + 1).also {
                 callback.invoke(it)
             }
@@ -69,11 +68,11 @@ actual class Cursor(val query: ResultSet) : Closeable {
     }
 
     actual fun double(index: Int, callback: (Double) -> Unit) {
-        tryPrint {
+        runCatching {
             query.getDouble(index + 1).also {
                 callback.invoke(it)
             }
-        }
+        }.onFailure { it.printStackTrace() }
     }
 
 

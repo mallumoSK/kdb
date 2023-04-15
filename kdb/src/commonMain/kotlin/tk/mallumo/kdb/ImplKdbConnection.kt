@@ -1,7 +1,6 @@
 package tk.mallumo.kdb
 
-import tk.mallumo.kdb.sqlite.SqliteDB
-import tk.mallumo.log.logINFO
+import tk.mallumo.kdb.sqlite.*
 
 class ImplKdbConnection internal constructor(
     val db: SqliteDB,
@@ -10,18 +9,18 @@ class ImplKdbConnection internal constructor(
 
     fun exec(sql: String) {
         if (sql.isEmpty()) return
-        if (debug) logINFO(sql)
+        if (debug) logger(sql)
         execIUD(sql)
     }
 
     fun call(sql: String) {
         if (sql.isEmpty()) return
-        if (debug) logINFO(sql)
+        if (debug) logger(sql)
         db.call(sql)
     }
 
     private fun execIUD(command: String) {
-        if (debug) logINFO(command)
+        if (debug) logger(command)
         db.exec(command)
     }
 

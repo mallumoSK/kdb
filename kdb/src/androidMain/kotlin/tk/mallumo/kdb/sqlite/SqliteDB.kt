@@ -3,8 +3,6 @@ package tk.mallumo.kdb.sqlite
 import android.content.*
 import android.database.sqlite.*
 import tk.mallumo.kdb.*
-import tk.mallumo.log.logINFO
-import tk.mallumo.utils.tryIgnore
 
 fun Context.defaultSqLitePath(name: String = "default-kdb.sqlite"): String = getDatabasePath(name).absolutePath
 
@@ -20,20 +18,19 @@ actual class SqliteDB(val isDebug: Boolean, dbPath: String) {
     }
 
     actual fun close() {
-
-        tryIgnore {
+        runCatching {
             conn?.close()
             conn = null
         }
     }
 
     actual fun insert(command: String, body: (DbInsertStatement) -> Unit) {
-        if (isDebug) logINFO(command)
+        if (isDebug) logger(command)
         body(DbInsertStatement(this@SqliteDB, command))
     }
 
     actual fun exec(command: String) {
-        if (isDebug) logINFO(command)
+        if (isDebug) logger(command)
 
         conn?.execSQL(command)
     }
@@ -42,7 +39,7 @@ actual class SqliteDB(val isDebug: Boolean, dbPath: String) {
         query: String,
         callback: (cursor: Cursor) -> Unit
     ) {
-        if (isDebug) logINFO(query)
+        if (isDebug) logger(query)
 
 
         conn?.apply {
@@ -54,13 +51,13 @@ actual class SqliteDB(val isDebug: Boolean, dbPath: String) {
     }
 
     actual fun queryUnclosed(query: String): ((Cursor) -> Unit) {
-        if (isDebug) logINFO(query)
+        if (isDebug) logger(query)
         return { Cursor(conn!!.rawQuery(query, null)) }
     }
 
 
     actual fun call(sql: String) {
-        if (isDebug) logINFO(sql)
+        if (isDebug) logger(sql)
         conn?.execSQL(sql)
     }
 }

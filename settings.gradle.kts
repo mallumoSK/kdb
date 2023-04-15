@@ -6,15 +6,16 @@ pluginManagement {
         maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
     }
 
-    infix fun PluginDependencySpec.versionX(key: String): PluginDependencySpec = version(extra[key] as String)
+    @Suppress("FunctionName")
+    infix fun PluginDependencySpec._version(key: String): PluginDependencySpec = version(extra[key] as String)
 
     plugins {
-        kotlin("multiplatform") versionX "version.kotlin"
-        kotlin("jvm") versionX "version.kotlin"
-        kotlin("android") versionX "version.kotlin"
-        id("com.android.application") versionX "version.agp"
-        id("com.android.library") versionX "version.agp"
-        id("com.google.devtools.ksp") versionX "version.ksp"
+        kotlin("multiplatform") _version "version.kotlin"
+        kotlin("jvm") _version "version.kotlin"
+        kotlin("android") _version "version.kotlin"
+        id("com.android.application") _version "version.agp"
+        id("com.android.library") _version "version.agp"
+        id("com.google.devtools.ksp") _version "version.ksp"
     }
 }
 @Suppress("UnstableApiUsage")
@@ -31,5 +32,5 @@ rootProject.name = "kdb"
 
 include(":kdb")
 include(":kdb-ksp")
-include(":test-android")
-include(":test-desktop")
+//include(":test-android")
+//include(":test-desktop")

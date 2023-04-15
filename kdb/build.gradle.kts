@@ -1,5 +1,5 @@
 plugins {
-    kotlin("multiplatform")
+    kotlin("multiplatform") apply true
     id("com.android.library")
 }
 
@@ -16,16 +16,14 @@ kotlin {
             kotlinOptions.jvmTarget = "1.8"
         }
     }
-    android{
+    android {
         publishLibraryVariants("release")
         publishLibraryVariantsGroupedByFlavor = true
     }
     sourceSets {
         @Suppress("UNUSED_VARIABLE") val commonMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${toolkit["version.coroutines"]}")
-                api("tk.mallumo:log:${toolkit["version.log"]}")
-                api("tk.mallumo:utils:${toolkit["version.utils"]}")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${toolkit["version.coroutines"]}")
             }
         }
         @Suppress("UNUSED_VARIABLE") val desktopMain by getting
@@ -35,23 +33,31 @@ kotlin {
 
 @Suppress("UnstableApiUsage")
 android {
-    compileSdk = 33
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+
     defaultConfig {
+        compileSdk = 33
         minSdk = 21
         targetSdk = 33
+        namespace = "tk.mallumo.kdb"
     }
-    namespace = "tk.mallumo.kdb"
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+
+    }
+    lintOptions {
+        isCheckReleaseBuilds = false
+        isAbortOnError = false
+        disable("TypographyFractions", "TypographyQuotes")
+    }
     lint {
         abortOnError = false
         checkReleaseBuilds = false
         disable += setOf("TypographyFractions", "TypographyQuotes")
     }
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
+    buildFeatures {
+        buildConfig = false
     }
 }
 
