@@ -1,11 +1,10 @@
 package tk.mallumo.test.android
 
-import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.*
+import androidx.lifecycle.*
+import kotlinx.coroutines.*
 import tk.mallumo.kdb.*
-import tk.mallumo.kdb.sqlite.SqliteDB
-import tk.mallumo.kdb.sqlite.defaultSqLitePath
-import tk.mallumo.log.LOGGER_IS_ENABLED
+import tk.mallumo.kdb.sqlite.*
 
 @KdbTable
 open class TEST_TABLE(
@@ -31,7 +30,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        lifecycleScope.launchWhenResumed {
+        lifecycleScope.launch(Dispatchers.IO) {
             // insert
             kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
 

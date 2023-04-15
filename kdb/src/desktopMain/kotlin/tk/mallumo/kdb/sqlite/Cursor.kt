@@ -8,7 +8,7 @@ import java.sql.*
 import java.util.*
 
 @Suppress("unused")
-actual class Cursor(val query: ResultSet) : Closeable {
+actual open class Cursor(val query: ResultSet) : Closeable {
 
     private val columnsCount = query.metaData.columnCount
 
@@ -21,7 +21,7 @@ actual class Cursor(val query: ResultSet) : Closeable {
         }
     }
 
-    actual val columns: Array<String> =
+    actual open val columns: Array<String> =
         if (columnsCount == 0) arrayOf()
         else (1..columnsCount).map {
             query.metaData
@@ -29,21 +29,21 @@ actual class Cursor(val query: ResultSet) : Closeable {
                 .lowercase(Locale.getDefault())
         }.toTypedArray()
 
-    actual val size: Int by lazy {
+    actual open val size: Int by lazy {
         itemsCount
     }
 
-    actual fun next(): Boolean = query.next()
+    actual open fun next(): Boolean = query.next()
 
-    actual fun moveTo(position: Int): Boolean = query.absolute(position + 1)
+    actual open fun moveTo(position: Int): Boolean = query.absolute(position + 1)
 
-    actual fun previous(): Boolean = query.previous()
+    actual open fun previous(): Boolean = query.previous()
 
     actual override fun close() {
         query.close()
     }
 
-    actual fun string(index: Int, callback: (String) -> Unit) {
+    actual open fun string(index: Int, callback: (String) -> Unit) {
         runCatching {
             query.getString(index + 1)?.also {
                 callback.invoke(it)
@@ -51,7 +51,7 @@ actual class Cursor(val query: ResultSet) : Closeable {
         }.onFailure { it.printStackTrace() }
     }
 
-    actual fun int(index: Int, callback: (Int) -> Unit) {
+    actual open fun int(index: Int, callback: (Int) -> Unit) {
         runCatching {
             query.getInt(index + 1).also {
                 callback.invoke(it)
@@ -59,7 +59,7 @@ actual class Cursor(val query: ResultSet) : Closeable {
         }.onFailure { it.printStackTrace() }
     }
 
-    actual fun long(index: Int, callback: (Long) -> Unit) {
+    actual open fun long(index: Int, callback: (Long) -> Unit) {
         runCatching {
             query.getLong(index + 1).also {
                 callback.invoke(it)
@@ -67,7 +67,7 @@ actual class Cursor(val query: ResultSet) : Closeable {
         }
     }
 
-    actual fun double(index: Int, callback: (Double) -> Unit) {
+    actual open fun double(index: Int, callback: (Double) -> Unit) {
         runCatching {
             query.getDouble(index + 1).also {
                 callback.invoke(it)

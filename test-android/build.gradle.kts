@@ -8,17 +8,13 @@ val toolkit by lazy {
     Toolkit.get(extensions = extensions.extraProperties)
 }
 
-
-group = "tk.mallumo"
-version = "1.0"
-
-
+@Suppress("UnstableApiUsage")
 android {
-    compileSdkVersion(33)
     defaultConfig {
         applicationId = "tk.mallumo.test.android"
-        minSdkVersion(21)
-        targetSdkVersion(33)
+        compileSdk = 33
+        minSdk = 21
+        targetSdk = 33
         versionCode = 1
         versionName = "1.0"
     }
@@ -56,12 +52,12 @@ java {
 
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.appcompat:appcompat:1.5.1")
-    implementation("com.google.android.material:material:1.7.0")
+    implementation("androidx.core:core-ktx:1.10.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.8.0")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${toolkit["version.coroutines"]}")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.5.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 }
 
 dependencies {

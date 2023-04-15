@@ -174,8 +174,8 @@ import tk.mallumo.kdb.sqlite.SqliteDB"""
         contract {
             callsInPlace(content, InvocationKind.EXACTLY_ONCE)
         }
-        val data = """
-@file:Suppress("unused")
+        @Suppress("SameParameterValue") val data = """
+@file:Suppress("unused", "FunctionName")
 package $basePackage
 
 $imports
@@ -198,7 +198,7 @@ ${content()}"""
 
     @Suppress("SpellCheckingInspection")
     private fun generateCommonFile(
-        pckg: String,
+        @Suppress("SameParameterValue") pckg: String,
         name: String,
         ext: String
     ): File? {

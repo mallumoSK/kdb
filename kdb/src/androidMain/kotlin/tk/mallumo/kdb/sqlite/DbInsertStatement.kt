@@ -5,42 +5,41 @@ package tk.mallumo.kdb.sqlite
 import android.database.sqlite.*
 
 @Suppress("unused")
-actual class DbInsertStatement actual constructor(
+actual open class DbInsertStatement actual constructor(
     @Suppress("MemberVisibilityCanBePrivate") val db: SqliteDB,
-    command: String
+    private val command: String
 ) {
 
-    private val statement: SQLiteStatement
+    private lateinit var statement: SQLiteStatement
 
-    var executed = false
-        private set
+    private var executed = false
 
-    init {
+    actual open fun prepare() {
         db.conn!!.beginTransaction()
         statement = db.conn!!.compileStatement(command)
     }
 
-    actual fun string(index: Int, callback: () -> String) {
+    actual open fun string(index: Int, callback: () -> String) {
         statement.bindString(index + 1, callback.invoke())
         executed = false
     }
 
-    actual fun int(index: Int, callback: () -> Int) {
+    actual open fun int(index: Int, callback: () -> Int) {
         statement.bindLong(index + 1, callback.invoke().toLong())
         executed = false
     }
 
-    actual fun long(index: Int, callback: () -> Long) {
+    actual open fun long(index: Int, callback: () -> Long) {
         statement.bindLong(index + 1, callback.invoke())
         executed = false
     }
 
-    actual fun double(index: Int, callback: () -> Double) {
+    actual open fun double(index: Int, callback: () -> Double) {
         statement.bindDouble(index + 1, callback.invoke())
         executed = false
     }
 
-    actual fun add() {
+    actual open fun add() {
         try {
             statement.executeInsert()
         } catch (e: Exception) {
@@ -50,7 +49,7 @@ actual class DbInsertStatement actual constructor(
         executed = true
     }
 
-    actual fun commit() {
+    actual open fun commit() {
         if (!executed) {
             add()
         }
@@ -58,7 +57,7 @@ actual class DbInsertStatement actual constructor(
         close()
     }
 
-    actual fun close() {
+    actual open fun close() {
         executed = true
         db.conn!!.endTransaction()
         statement.close()

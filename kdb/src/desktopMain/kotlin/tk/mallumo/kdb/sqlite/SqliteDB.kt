@@ -4,21 +4,21 @@ import tk.mallumo.kdb.*
 import java.sql.*
 
 @Suppress("unused", "UNUSED_PARAMETER")
-actual class SqliteDB(
+actual open class SqliteDB(
     val isDebug: Boolean,
     isSqLite: Boolean,
     private val connectionCallback: () -> Connection
 ) {
 
-    actual val path: String = ""
+    actual open val path: String = ""
 
     var conn: Connection? = null
 
-    actual fun open() {
+    actual open fun open() {
         conn = connectionCallback.invoke()
     }
 
-    actual fun close() {
+    actual open fun close() {
         runCatching {
             conn?.close()
             conn = null
@@ -26,18 +26,20 @@ actual class SqliteDB(
 
     }
 
-    actual fun insert(command: String, body: (DbInsertStatement) -> Unit) {
+    actual open fun insert(command: String, body: (DbInsertStatement) -> Unit) {
         if (isDebug) logger(command)
-        body(DbInsertStatement(this@SqliteDB, command))
-
+        with(DbInsertStatement(this@SqliteDB, command)) {
+            prepare()
+            body(this)
+        }
     }
 
-    actual fun exec(command: String) {
+    actual open fun exec(command: String) {
         if (isDebug) logger(command)
         conn?.execSQL(command)
     }
 
-    actual fun query(
+    actual open fun query(
         query: String,
         callback: (cursor: Cursor) -> Unit
     ) {
@@ -58,21 +60,19 @@ actual class SqliteDB(
         }
     }
 
-    actual fun queryUnclosed(query: String): ((Cursor) -> Unit) {
+    actual open fun queryUnclosed(query: String): ((Cursor) -> Unit) {
         if (isDebug) logger(query)
         return { Cursor(conn!!.rawQuery(query, null)) }
     }
 
 
-    actual fun call(sql: String) {
+    actual open fun call(sql: String) {
         if (isDebug) logger(sql)
         conn?.prepareCall(sql)?.also {
             it.execute()
             it.close()
         }
-
     }
-
 }
 
 @Suppress("UNUSED_PARAMETER")

@@ -3,9 +3,24 @@ package tk.mallumo.kdb.ksp
 fun generateCreator() = """
 private val databases = hashMapOf<String,Kdb>()
  
-fun Kdb.Companion.get(sqlite:tk.mallumo.kdb.sqlite.SqliteDB):Kdb{
+fun Kdb.Companion.get(
+    sqlite:tk.mallumo.kdb.sqlite.SqliteDB,
+    beforeInit: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {},
+    afterInit: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {},
+    beforeDatabaseChange: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {},
+    afterDatabaseChange: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {})
+    :Kdb{
         return databases.getOrPut(sqlite.path){
-           Kdb.newInstance(sqlite, sqlite.isDebug, KdbGeneratedDefStructure.getTablesDef())
+            @Suppress("DEPRECATION")
+            Kdb.Companion.newInstance(
+                sqlite,
+                sqlite.isDebug,
+                KdbGeneratedDefStructure.getTablesDef(),
+                beforeInit,
+                afterInit,
+                beforeDatabaseChange,
+                afterDatabaseChange
+            )
         }
 }   
 """

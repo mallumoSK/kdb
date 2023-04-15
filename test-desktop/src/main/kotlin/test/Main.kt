@@ -4,7 +4,6 @@ package test
 import kotlinx.coroutines.*
 import tk.mallumo.kdb.*
 import tk.mallumo.kdb.sqlite.*
-import tk.mallumo.log.LOGGER_IS_ENABLED
 import java.sql.*
 
 @KdbTable
@@ -24,17 +23,20 @@ open class BindingTEST_TABLE(var x: Double = 1.3) : TEST_TABLE()
 open class BindingTEST(var xyz: String = "")
 
 val kdb: Kdb by lazy {
-//    Kdb.Companion.get
-    Kdb.get(SqliteDB(isDebug = true, isSqLite = true) {
+    val sqlite = SqliteDB(isDebug = true, isSqLite = true) {
         DriverManager.getConnection("jdbc:sqlite:/tmp/test.sqlite").apply {
             autoCommit = false
         }
-    })
+    }
+    Kdb.get(sqlite,
+        { println("-BEFORE INIT") },
+        { println("-AFTER INIT") },
+        { println("--BEFORE RECONFIGURE") },
+        { println("--AFTER RECONFIGURE") })
 
 }
 
 fun main(args: Array<String>) {
-    LOGGER_IS_ENABLED = true
     runBlocking {
         kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
 

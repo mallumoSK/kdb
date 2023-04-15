@@ -7,21 +7,24 @@ internal object DbRecreatingFunctions {
 
     private const val dbDefColumns =
         "NAME_TABLE, NAME_COLUMN, TYPE, DEFAULT_VALUE, IS_UNIQUE, IS_INDEXED"
+
     private const val dbDefColumnsCreator =
         "NAME_TABLE LONGVARCHAR, NAME_COLUMN LONGVARCHAR, TYPE LONGVARCHAR, DEFAULT_VALUE LONGVARCHAR, IS_UNIQUE INT, IS_INDEXED INT"
+
     private const val dbDefTable = "__DB_DEF"
 
     suspend fun rebuildDatabase(
+        kdb: Kdb,
         db: SqliteDB,
         dbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ) {
-        rebuildTables(db, readOldDbDef(db, dbDefArray, debug), dbDefArray, debug)
+        rebuildTables(kdb, db, readOldDbDef(db, dbDefArray, debug), dbDefArray, debug)
 
     }
 
-
     private suspend fun rebuildTables(
+        kdb: Kdb,
         db: SqliteDB,
         oldDefinitionArr: List<ImplKdbTableDef>,
         newDefinitionArr: MutableList<ImplKdbTableDef>,
@@ -47,10 +50,8 @@ internal object DbRecreatingFunctions {
                     oldDef.columns.firstOrNull { oldC -> oldC.name == newC.name }.also {
                         if (it == null) {
                             alterColumn.add(newC)
-//                            log("${newDef.name}.${newC}")
                             writeChanges = true
                         } else if (it.defaultValue != newC.defaultValue || it.type != newC.type) {
-//                            log("${it.defaultValue}.${newC.defaultValue } ${it.type} ${newC.type}  ")
                             redeclareTable = true
                         }
                     }
@@ -60,7 +61,6 @@ internal object DbRecreatingFunctions {
                     val deletedColumns =
                         oldDef.columns.filter { od -> !newDef.columns.any { nd -> nd.name == od.name } }
                     if (deletedColumns.isNotEmpty()) {
-//                        log("${newDef.name}.${deletedColumns.joinToString(",")}")
                         redeclareTable = true
                     }
                 }
@@ -101,7 +101,9 @@ internal object DbRecreatingFunctions {
         }
         if (writeChanges) {
             if (debug) logger("WRITING DATABASE CHANGES")
+            kdb.beforeDatabaseChange(db)
             writeNewDbDef(db, newDefinitionArr)
+            kdb.afterDatabaseChange(db)
         } else {
             if (debug) logger("NO DATABASE CHANGES")
         }

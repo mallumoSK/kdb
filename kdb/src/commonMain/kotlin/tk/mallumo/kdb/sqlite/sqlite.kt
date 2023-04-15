@@ -1,48 +1,49 @@
 package tk.mallumo.kdb.sqlite
 
 
-@Suppress("SpellCheckingInspection", "unused", "UNUSED_PARAMETER")
-expect class SqliteDB {
+@Suppress("unused")
+expect open class SqliteDB {
 
-    val path: String
+    open val path: String
 
-    fun open()
-    fun close()
-    fun insert(command: String, body: (DbInsertStatement) -> Unit)
-    fun exec(command: String)
-    fun query(query: String, callback: (cursor: Cursor) -> Unit)
-    fun queryUnclosed(query: String): ((Cursor) -> Unit)
-    fun call(sql: String)
+    open fun open()
+    open fun close()
+    open fun insert(command: String, body: (DbInsertStatement) -> Unit)
+    open fun exec(command: String)
+    open fun query(query: String, callback: (cursor: Cursor) -> Unit)
+    open fun queryUnclosed(query: String): ((Cursor) -> Unit)
+    open fun call(sql: String)
 }
 
-@Suppress("unused", "UNUSED_PARAMETER")
-expect class Cursor {
+@Suppress("unused")
+expect open class Cursor {
 
-    val columns: Array<String>
-    val size: Int
+    open val columns: Array<String>
+    open val size: Int
 
-    fun next(): Boolean
-    fun moveTo(position: Int): Boolean
-    fun previous(): Boolean
-    fun close()
+    open fun next(): Boolean
+    open fun moveTo(position: Int): Boolean
+    open fun previous(): Boolean
+    open fun close()
 
-    fun string(index: Int, callback: (String) -> Unit)
-    fun int(index: Int, callback: (Int) -> Unit)
-    fun long(index: Int, callback: (Long) -> Unit)
-    fun double(index: Int, callback: (Double) -> Unit)
+    open fun string(index: Int, callback: (String) -> Unit)
+    open fun int(index: Int, callback: (Int) -> Unit)
+    open fun long(index: Int, callback: (Long) -> Unit)
+    open fun double(index: Int, callback: (Double) -> Unit)
 }
 
-@Suppress("unused", "UNUSED_PARAMETER")
-expect class DbInsertStatement(db: SqliteDB, command: String) {
+@Suppress("unused")
+expect open class DbInsertStatement(db: SqliteDB, command: String) {
 
-    fun string(index: Int, callback: () -> String)
-    fun int(index: Int, callback: () -> Int)
-    fun long(index: Int, callback: () -> Long)
-    fun double(index: Int, callback: () -> Double)
+    open fun prepare()
 
-    fun add()
-    fun commit()
-    fun close()
+    open fun string(index: Int, callback: () -> String)
+    open fun int(index: Int, callback: () -> Int)
+    open fun long(index: Int, callback: () -> Long)
+    open fun double(index: Int, callback: () -> Double)
 
+    open fun add()
+    open fun commit()
+    open fun close()
 }
 

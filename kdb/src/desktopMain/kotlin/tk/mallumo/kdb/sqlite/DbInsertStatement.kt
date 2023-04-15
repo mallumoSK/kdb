@@ -5,56 +5,57 @@ package tk.mallumo.kdb.sqlite
 import tk.mallumo.kdb.*
 
 @Suppress("unused")
-actual class DbInsertStatement actual constructor(val db: SqliteDB, command: String) {
+actual open class DbInsertStatement actual constructor(val db: SqliteDB, command: String) {
 
     private val statement = db.conn!!.prepareStatement(command)
 
-    var executed = false
-        private set
+    private var rowAdded = false
 
-    actual fun string(index: Int, callback: () -> String) {
+
+    actual open fun prepare() {
+    }
+
+    actual open fun string(index: Int, callback: () -> String) {
         statement.setString(index + 1, callback.invoke())
-        executed = false
+        rowAdded = false
     }
 
-    actual fun int(index: Int, callback: () -> Int) {
+    actual open fun int(index: Int, callback: () -> Int) {
         statement.setLong(index + 1, callback.invoke().toLong())
-        executed = false
+        rowAdded = false
     }
 
-    actual fun long(index: Int, callback: () -> Long) {
+    actual open fun long(index: Int, callback: () -> Long) {
         statement.setLong(index + 1, callback.invoke())
-        executed = false
+        rowAdded = false
     }
 
-    actual fun double(index: Int, callback: () -> Double) {
+    actual open fun double(index: Int, callback: () -> Double) {
         statement.setDouble(index + 1, callback.invoke())
-        executed = false
+        rowAdded = false
     }
 
-    actual fun add() {
+    actual open fun add() {
         try {
             statement.addBatch()
         } catch (e: Exception) {
             runCatching { statement.close() }
             throw e
         }
-        executed = true
+        rowAdded = true
     }
 
-    actual fun commit() {
-        if (!executed) {
-            add()
-        }
+    actual open fun commit() {
+        if (!rowAdded) add()
+
         statement.executeBatch()
         db.conn!!.commit()
         statement.clearBatch()
         close()
     }
 
-    actual fun close() {
-        executed = true
+    actual open fun close() {
+        rowAdded = true
         runCatching { statement.close() }
     }
-
 }

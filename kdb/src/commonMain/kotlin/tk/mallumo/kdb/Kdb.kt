@@ -10,19 +10,36 @@ import tk.mallumo.kdb.sqlite.*
 class Kdb internal constructor(
     private val db: SqliteDB,
     private val dbDefArray: MutableList<ImplKdbTableDef>,
-    private val isDebug: Boolean
+    private val isDebug: Boolean,
+    internal val beforeInit: suspend SqliteDB.() -> Unit = {},
+    internal val afterInit: suspend SqliteDB.() -> Unit = {},
+    internal val beforeDatabaseChange: suspend SqliteDB.() -> Unit = {},
+    internal val afterDatabaseChange: suspend SqliteDB.() -> Unit = {},
 ) {
 
     companion object {
         @Deprecated(
-            message = "use Kdb.Companion.newInstance(sqlite: SqliteDB, isDebug: Boolean)",
-            replaceWith = ReplaceWith("get")
+            message = "use Kdb.Companion.get(sqlite, beforeInit, afterInit, beforeDatabaseChange, afterDatabaseChange)",
+            replaceWith = ReplaceWith("get"),
+            level = DeprecationLevel.WARNING
         )
         fun newInstance(
             sqlite: SqliteDB,
             isDebug: Boolean,
-            dbDefArray: MutableList<ImplKdbTableDef>
-        ): Kdb = Kdb(sqlite, dbDefArray, isDebug)
+            dbDefArray: MutableList<ImplKdbTableDef>,
+            beforeInit: suspend SqliteDB.() -> Unit = {},
+            afterInit: suspend SqliteDB.() -> Unit = {},
+            beforeDatabaseChange: suspend SqliteDB.() -> Unit = {},
+            afterDatabaseChange: suspend SqliteDB.() -> Unit = {},
+        ): Kdb = Kdb(
+            sqlite,
+            dbDefArray,
+            isDebug,
+            beforeInit,
+            afterInit,
+            beforeDatabaseChange,
+            afterDatabaseChange
+        )
 
         internal val kdbLock = Mutex()
     }
@@ -47,11 +64,7 @@ class Kdb internal constructor(
     }
 
     suspend fun prepareDatabase(): Kdb {
-        withContext(coroutineKdbDispatcher) {
-            kdbLock.withLock {
-                initDatabase()
-            }
-        }
+        kdbLock.withLock { initDatabase() }
         return this
     }
 
@@ -59,20 +72,18 @@ class Kdb internal constructor(
         if (isInitComplete) return
 
         db.open()
-        DbRecreatingFunctions.rebuildDatabase(db, dbDefArray, isDebug)
+        db.beforeInit()
+        DbRecreatingFunctions.rebuildDatabase(this, db, dbDefArray, isDebug)
         connection = ImplKdbConnection(db, isDebug)
         isInitComplete = true
+        db.afterInit()
     }
 
-    suspend fun <T : Any> connection(conn: suspend ImplKdbConnection.() -> T): T {
-        return withContext(coroutineKdbDispatcher) {
-            kdbLock.withLock {
-                if (!isInitComplete) {
-                    initDatabase()
-                }
-                conn.invoke(connection)
-            }
+    suspend fun <T : Any> connection(conn: suspend ImplKdbConnection.() -> T): T = kdbLock.withLock {
+        if (!isInitComplete) {
+            initDatabase()
         }
+        conn.invoke(connection)
     }
 
     suspend fun exec(sql: String) {

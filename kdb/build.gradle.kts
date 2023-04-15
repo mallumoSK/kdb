@@ -1,5 +1,7 @@
+@file:Suppress("DEPRECATION")
+
 plugins {
-    kotlin("multiplatform") apply true
+    kotlin("multiplatform") version "1.8.0" apply true
     id("com.android.library")
 }
 

@@ -1,7 +1,6 @@
 package tk.mallumo.test.android
 
-import android.app.Application
-import tk.mallumo.log.LOGGER_IS_ENABLED
+import android.app.*
 
 class MainApplication : Application() {
 
@@ -11,7 +10,6 @@ class MainApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        LOGGER_IS_ENABLED = true
         instance = this
     }
 }
