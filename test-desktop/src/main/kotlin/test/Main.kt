@@ -38,21 +38,26 @@ val kdb: Kdb by lazy {
 
 fun main(args: Array<String>) {
     runBlocking {
-        kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
+        var ids: List<Long> = emptyList()
+        ids = kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
+        println("tt 1 $ids")
 
-        kdb.insert.test_table(
+        ids = kdb.insert.test_table(
             arrayOf(
                 BindingTEST_TABLE().apply { item_string = "b"; item_float = 2F },
                 TEST_TABLE(item_string = "c", item_float = 3F)
             )
         )
+        println("tt 2+3 $ids")
 
-        kdb.insert.test_table(
+        ids = kdb.insert.test_table(
             listOf(
                 TEST_TABLE(item_string = "d", item_float = 4F),
                 TEST_TABLE(item_string = "e", item_float = 5F)
             )
         )
+        println("tt 4+5 $ids")
+
         //query
         val items = kdb.query.test_table("SELECT * FROM test_table")
         val items2 = kdb.query.binding_test_table("SELECT t.*, 123.0 as x  FROM test_table t ")

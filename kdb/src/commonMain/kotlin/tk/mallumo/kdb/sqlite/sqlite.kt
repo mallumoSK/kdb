@@ -34,6 +34,7 @@ expect open class Cursor {
 
 @Suppress("unused")
 expect open class DbInsertStatement(db: SqliteDB, command: String) {
+    protected val ids: MutableList<Long>
 
     open fun prepare()
 
@@ -43,7 +44,7 @@ expect open class DbInsertStatement(db: SqliteDB, command: String) {
     open fun double(index: Int, callback: () -> Double)
 
     open fun add()
-    open fun commit()
+    open fun commit(): List<Long>
     open fun close()
 }
 

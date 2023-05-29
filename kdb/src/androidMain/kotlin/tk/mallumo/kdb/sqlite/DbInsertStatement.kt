@@ -10,11 +10,14 @@ actual open class DbInsertStatement actual constructor(
     private val command: String
 ) {
 
+    protected actual val ids: MutableList<Long> = mutableListOf()
+
     private lateinit var statement: SQLiteStatement
 
     private var executed = false
 
     actual open fun prepare() {
+        ids.clear()
         db.conn!!.beginTransaction()
         statement = db.conn!!.compileStatement(command)
     }
@@ -41,7 +44,7 @@ actual open class DbInsertStatement actual constructor(
 
     actual open fun add() {
         try {
-            statement.executeInsert()
+            ids += statement.executeInsert()
         } catch (e: Exception) {
             db.conn!!.endTransaction()
             throw e
@@ -49,12 +52,13 @@ actual open class DbInsertStatement actual constructor(
         executed = true
     }
 
-    actual open fun commit() {
+    actual open fun commit(): List<Long> {
         if (!executed) {
             add()
         }
         db.conn!!.setTransactionSuccessful()
         close()
+        return ids
     }
 
     actual open fun close() {

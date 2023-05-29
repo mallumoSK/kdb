@@ -1,5 +1,6 @@
 package tk.mallumo.test.android
 
+import android.util.*
 import androidx.appcompat.app.*
 import androidx.lifecycle.*
 import kotlinx.coroutines.*
@@ -30,23 +31,31 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
+        var ids: List<Long> = emptyList()
         lifecycleScope.launch(Dispatchers.IO) {
             // insert
-            kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
+            kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F)).also {
+                Log.i("insert", "rowIds $it")
+            }
 
             kdb.insert.test_table(
                 arrayOf(
                     BindingTEST_TABLE().apply { item_string = "b"; item_float = 2F },
                     TEST_TABLE(item_string = "c", item_float = 3F)
                 )
-            )
+            ).also {
+                Log.i("insert", "rowIds $it")
+            }
 
             kdb.insert.test_table(
                 listOf(
                     TEST_TABLE(item_string = "d", item_float = 4F),
                     TEST_TABLE(item_string = "e", item_float = 5F)
                 )
-            )
+            ).also {
+                Log.i("insert", "rowIds $it")
+            }
+
             //query
             val items = kdb.query.test_table("SELECT * FROM test_table")
             val items2 = kdb.query.binding_test_table("SELECT t.*, 123.0 as x  FROM test_table t ")

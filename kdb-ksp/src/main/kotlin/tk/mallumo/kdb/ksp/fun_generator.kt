@@ -168,16 +168,18 @@ fun generateInsertFunctions(
         } $comumns VALUES $values""""
         append(
             """
-    fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: SqliteDB){
-        if (items.isEmpty()) return
+    fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: SqliteDB):List<Long>{
+        var rowIds:List<Long> = emptyList()
+        if (items.isEmpty()) return rowIds
     
         db.insert(${insert}) {
             items.forEach { item ->
 $insertVal
                 it.add()
             }
-            it.commit()
+            rowIds = it.commit()
         }
+        return rowIds
     }
 """
         )
@@ -253,11 +255,14 @@ fun generateExtInsertFunctions(
     map.forEach { entry ->
         append(
             """
-suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(item: ${entry.qualifiedName}) = ${entry.niceClassName}(arrayOf(item))
+suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(item: ${entry.qualifiedName}): List<Long> = 
+    ${entry.niceClassName}(arrayOf(item))
 
-suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: List<${entry.qualifiedName}>) = ${entry.niceClassName}(items.toTypedArray())
+suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: List<${entry.qualifiedName}>): List<Long> = 
+    ${entry.niceClassName}(items.toTypedArray())
 
-suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: Array<${entry.qualifiedName}>) = kdb.connection { KdbGeneratedInsert.insert_${entry.functionName}(items, db) }
+suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: Array<${entry.qualifiedName}>): List<Long> = 
+    kdb.connection { KdbGeneratedInsert.insert_${entry.functionName}(items, db) }
 """
         )
     }
