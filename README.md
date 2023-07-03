@@ -1,8 +1,10 @@
 # kdb
 
-## KDB: ![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb%2Fmaven-metadata.xml&style=for-the-badge "Version")
+## KDB: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmallumo%2Fpublic%2Ftk%2Fmallumo%2Fkdb%2Fmaven-metadata.xml)
 
-## KDB-KSP: ![https://mallumo.jfrog.io/artifactory/gradle-dev-local/tk/mallumo/kdb-ksp/](https://img.shields.io/maven-metadata/v?color=%234caf50&metadataUrl=https%3A%2F%2Fmallumo.jfrog.io%2Fartifactory%2Fgradle-dev-local%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml&style=for-the-badge "Version")
+
+## KDB-KSP: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmallumo%2Fpublic%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml)
+
 
 
 * sqlite wrapper for desktop and android
@@ -126,7 +128,7 @@ kdb.update.test_table(where = "item_string = 'b'",
 
 ```groovy
 plugins {
-    id("com.google.devtools.ksp") version "1.8.0-1.0.9"
+    id("com.google.devtools.ksp") version "1.8.20-1.0.11"
 }
 ```
 ```groovy
@@ -160,7 +162,7 @@ dependencies {
 }
 
 repositories {
-    maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
+    maven("https://repo.repsy.io/mvn/mallumo/public")
 }
 ```
 

@@ -3,7 +3,7 @@ pluginManagement {
         google()
         gradlePluginPortal()
         mavenCentral()
-        maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
+        maven("https://repo.repsy.io/mvn/mallumo/public")
     }
 
     infix fun PluginDependencySpec.ofVersion(key: String): PluginDependencySpec = version(extra[key] as String)
@@ -24,7 +24,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://mallumo.jfrog.io/artifactory/gradle-dev-local")
+        maven("https://repo.repsy.io/mvn/mallumo/public")
     }
 }
 
@@ -32,5 +32,5 @@ rootProject.name = "kdb"
 
 include(":kdb")
 include(":kdb-ksp")
-include(":test-android")
-include(":test-desktop")
+//include(":test-android")
+//include(":test-desktop")

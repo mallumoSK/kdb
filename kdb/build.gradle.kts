@@ -1,7 +1,10 @@
 @file:Suppress("DEPRECATION")
 
+import java.util.*
+
 plugins {
-    kotlin("multiplatform") version "1.8.0" apply true
+    id("maven-publish")
+    kotlin("multiplatform")
     id("com.android.library")
     id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
@@ -16,7 +19,7 @@ version = toolkit["version.kdb"]
 kotlin {
     jvm("desktop") {
         compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.jvmTarget = "11"
         }
     }
     android {
@@ -45,8 +48,8 @@ android {
         namespace = "tk.mallumo.kdb"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
 
     }
     lintOptions {
@@ -66,8 +69,34 @@ android {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
 
-apply("../secure.gradle")
+val prop = Properties().apply {
+    project.rootProject.file("local.properties").reader().use {
+        load(it)
+    }
+}
+
+publishing {
+    val rName = prop["repsy.name"] as String
+    val rKey = prop["repsy.key"] as String
+    repositories {
+        maven {
+            name = "repsy.io"
+            url = uri("https://repo.repsy.io/mvn/${rName}/public")
+            credentials {
+                username = rName
+                password = rKey
+            }
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+            groupId = "tk.mallumo"
+            artifactId = "kdb"
+            version = toolkit["version.kdb"]
+        }
+    }
+}
