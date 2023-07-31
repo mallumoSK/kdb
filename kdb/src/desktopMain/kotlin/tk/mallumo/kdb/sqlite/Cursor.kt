@@ -2,7 +2,6 @@
 
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.*
 import java.io.*
 import java.sql.*
 import java.util.*
@@ -74,6 +73,4 @@ actual open class Cursor(val query: ResultSet) : Closeable {
             }
         }.onFailure { it.printStackTrace() }
     }
-
-
 }

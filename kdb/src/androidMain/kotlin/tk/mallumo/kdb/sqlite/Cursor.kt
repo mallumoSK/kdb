@@ -2,7 +2,6 @@
 
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.*
 import java.io.*
 import java.util.*
 

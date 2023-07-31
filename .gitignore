@@ -86,4 +86,3 @@ lint/tmp/
 /.idea/
 /secure.gradle
 /secure-ksp.gradle
-/app/src/main/ksp/tk/mallumo/kdb/

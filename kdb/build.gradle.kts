@@ -1,20 +1,11 @@
-@file:Suppress("DEPRECATION")
-
-import java.util.*
-
 plugins {
     id("maven-publish")
     kotlin("multiplatform")
     id("com.android.library")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
-val toolkit by lazy {
-    Toolkit.get(extensions = extensions.extraProperties)
-}
-
-group = "tk.mallumo"
-version = toolkit["version.kdb"]
+group = Deps.group
+version = Deps.core.version
 
 kotlin {
     jvm("desktop") {
@@ -22,18 +13,18 @@ kotlin {
             kotlinOptions.jvmTarget = "11"
         }
     }
-    android {
+    androidTarget {
         publishLibraryVariants("release")
         publishLibraryVariantsGroupedByFlavor = true
     }
     sourceSets {
-        @Suppress("UNUSED_VARIABLE") val commonMain by getting {
+        val commonMain by getting {
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:${toolkit["version.coroutines"]}")
+                api(Deps.lib.coroutines)
             }
         }
-        @Suppress("UNUSED_VARIABLE") val desktopMain by getting
-        @Suppress("UNUSED_VARIABLE") val androidMain by getting
+        val desktopMain by getting
+        val androidMain by getting
     }
 }
 
@@ -42,20 +33,13 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
     defaultConfig {
+        namespace = "${Deps.group}.${Deps.core.artifact}"
         compileSdk = 33
         minSdk = 21
-        targetSdk = 33
-        namespace = "tk.mallumo.kdb"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
-
-    }
-    lintOptions {
-        isCheckReleaseBuilds = false
-        isAbortOnError = false
-        disable("TypographyFractions", "TypographyQuotes")
     }
     lint {
         abortOnError = false
@@ -73,15 +57,9 @@ java {
     }
 }
 
-val prop = Properties().apply {
-    project.rootProject.file("local.properties").reader().use {
-        load(it)
-    }
-}
-
 publishing {
-    val rName = prop["repsy.name"] as String
-    val rKey = prop["repsy.key"] as String
+    val rName = propertiesLocal["repsy.name"]
+    val rKey = propertiesLocal["repsy.key"]
     repositories {
         maven {
             name = "repsy.io"
@@ -94,9 +72,9 @@ publishing {
     }
     publications {
         create<MavenPublication>("maven") {
-            groupId = "tk.mallumo"
-            artifactId = "kdb"
-            version = toolkit["version.kdb"]
+            groupId = Deps.group
+            artifactId = Deps.core.artifact
+            version = Deps.core.version
         }
     }
 }

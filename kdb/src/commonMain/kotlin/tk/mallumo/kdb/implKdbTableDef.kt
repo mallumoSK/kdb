@@ -32,7 +32,6 @@ class ImplKdbTableDef(
         const val NUMERIC = "NUMERIC"
         const val INTEGER = "INTEGER"
         const val BIGINT = "BIGINT"
-//        const val DOUBLE = "DOUBLE"
     }
 }
 
@@ -52,7 +51,7 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
 }
 
 fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean)
-        : List<String> {
+    : List<String> {
 
     val result = mutableListOf<String>()
     if (redeclareType) {

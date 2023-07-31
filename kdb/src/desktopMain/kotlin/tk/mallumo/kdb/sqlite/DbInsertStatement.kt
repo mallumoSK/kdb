@@ -2,8 +2,6 @@
 
 package tk.mallumo.kdb.sqlite
 
-import tk.mallumo.kdb.*
-
 @Suppress("unused")
 actual open class DbInsertStatement actual constructor(val db: SqliteDB, command: String) {
 

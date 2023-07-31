@@ -27,6 +27,7 @@ object ImplKdbUtilsFunctions {
                         ("@" + it.key),
                         ("'" + it.value + "'")
                     )
+
                     else -> query.replace(("@" + it.key), ("'" + it.value + "'"))
                 }
             }

@@ -4,14 +4,10 @@ plugins {
     kotlin("android")
 }
 
-val toolkit by lazy {
-    Toolkit.get(extensions = extensions.extraProperties)
-}
-
-@Suppress("UnstableApiUsage")
 android {
     defaultConfig {
         applicationId = "tk.mallumo.test.android"
+        namespace = "tk.mallumo.test.android"
         compileSdk = 33
         minSdk = 21
         targetSdk = 33
@@ -19,8 +15,8 @@ android {
         versionName = "1.0"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     buildTypes {
         getByName("release") {
@@ -40,14 +36,12 @@ android {
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
 }
 
 java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
+    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
 }
 
 
@@ -56,7 +50,7 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.8.0")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${toolkit["version.coroutines"]}")
+    implementation(Deps.lib.coroutinesAndroid)
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
 }
 

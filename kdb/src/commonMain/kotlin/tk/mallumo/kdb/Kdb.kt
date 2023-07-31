@@ -2,7 +2,6 @@
 
 package tk.mallumo.kdb
 
-import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.*
 import tk.mallumo.kdb.sqlite.*
 

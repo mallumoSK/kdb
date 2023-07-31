@@ -1,20 +1,13 @@
-import java.util.*
-
 plugins {
     kotlin("jvm")
     id("maven-publish")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator")
 }
 
-val toolkit by lazy {
-    Toolkit.get(extensions = extensions.extraProperties)
-}
-
-group = "tk.mallumo"
-version = toolkit["version.kdb"]
+group = Deps.group
+version = Deps.ksp.version
 
 dependencies {
-    api("com.google.devtools.ksp:symbol-processing-api:${toolkit["version.ksp"]}")
+    api(Deps.lib.ksp)
 }
 
 java {
@@ -23,15 +16,9 @@ java {
     }
 }
 
-val prop = Properties().apply {
-    project.rootProject.file("local.properties").reader().use {
-        load(it)
-    }
-}
-
 publishing {
-    val rName = prop["repsy.name"] as String
-    val rKey = prop["repsy.key"] as String
+    val rName = propertiesLocal["repsy.name"]
+    val rKey = propertiesLocal["repsy.key"]
     repositories {
         maven {
             name = "repsy.io"
@@ -44,9 +31,9 @@ publishing {
     }
     publications {
         create<MavenPublication>("maven") {
-            groupId = "tk.mallumo"
-            artifactId = "kdb-ksp"
-            version = toolkit["version.kdb"]
+            groupId = Deps.group
+            artifactId = Deps.ksp.artifact
+            version = Deps.ksp.version
         }
     }
 }
