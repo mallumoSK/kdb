@@ -8,7 +8,7 @@ group = "tk.mallumo"
 version = "1.0"
 
 dependencies {
-    implementation(project(":kdb"))
+    implementation(project(":kdb-core"))
     ksp(project(":kdb-ksp"))
     implementation(Deps.lib.sqliteJdbc)
     implementation(Deps.lib.coroutines)

@@ -6,14 +6,10 @@ plugins {
 group = Deps.group
 version = Deps.ksp.version
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+
 dependencies {
     api(Deps.lib.ksp)
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
 }
 
 publishing {
@@ -27,13 +23,6 @@ publishing {
                 username = rName
                 password = rKey
             }
-        }
-    }
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = Deps.group
-            artifactId = Deps.ksp.artifact
-            version = Deps.ksp.version
         }
     }
 }

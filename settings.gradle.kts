@@ -8,7 +8,7 @@ pluginManagement {
 
 rootProject.name = "kdb"
 
-include(":kdb")
+include(":kdb-core")
 include(":kdb-ksp")
 include(":test-android")
 include(":test-desktop")

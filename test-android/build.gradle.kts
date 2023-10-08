@@ -56,5 +56,5 @@ dependencies {
 
 dependencies {
     ksp(project(":kdb-ksp"))
-    implementation(project(":kdb"))
+    implementation(project(":kdb-core"))
 }

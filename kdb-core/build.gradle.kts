@@ -7,8 +7,10 @@ plugins {
 group = Deps.group
 version = Deps.core.version
 
+java.toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+
 kotlin {
-    jvm("desktop") {
+    jvm() {
         compilations.all {
             kotlinOptions.jvmTarget = "11"
         }
@@ -23,7 +25,7 @@ kotlin {
                 api(Deps.lib.coroutines)
             }
         }
-        val desktopMain by getting
+        val jvmMain by getting
         val androidMain by getting
     }
 }
@@ -33,7 +35,7 @@ android {
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
     defaultConfig {
-        namespace = "${Deps.group}.${Deps.core.artifact}"
+        namespace = "${Deps.group}.${Deps.core.artifact.replace("-",".")}"
         compileSdk = 33
         minSdk = 21
     }
@@ -51,11 +53,6 @@ android {
     }
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-    }
-}
 
 publishing {
     val rName = propertiesLocal["repsy.name"]
@@ -68,13 +65,6 @@ publishing {
                 username = rName
                 password = rKey
             }
-        }
-    }
-    publications {
-        create<MavenPublication>("maven") {
-            groupId = Deps.group
-            artifactId = Deps.core.artifact
-            version = Deps.core.version
         }
     }
 }
