@@ -12,6 +12,11 @@ dependencies {
     api(Deps.lib.ksp)
 }
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 publishing {
     val rName = propertiesLocal["repsy.name"]
     val rKey = propertiesLocal["repsy.key"]
@@ -23,6 +28,14 @@ publishing {
                 username = rName
                 password = rKey
             }
+        }
+    }
+    publications {
+        create<MavenPublication>("maven") {
+            groupId =  Deps.group
+            artifactId = Deps.ksp.artifact
+            version = Deps.ksp.version
+            from(components["java"])
         }
     }
 }
