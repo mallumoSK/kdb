@@ -4,13 +4,13 @@ object Deps {
 
 
     object version {
-        const val kotlin = "1.9.0"
+        const val kotlin = "1.9.10"
         const val agp = "8.0.2"
-        const val ksp = "1.9.0-1.0.13"
+        const val ksp = "1.9.10-1.0.13"
     }
 
     object core {
-        const val version = "${Deps.version.ksp}-2.0.1"
+        const val version = "${Deps.version.ksp}-1.0.0"
         const val artifact = "kdb-core"
     }
 
