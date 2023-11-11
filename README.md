@@ -22,7 +22,10 @@
 * direct work with objects
 * automatic generating suspend extension function of (query, insert, update, delete)
 * all tasks are synchronized by ``kotlinx.coroutines.sync.Mutex``
-* you can use yours own jdbc implementations for other database engines, by custom implementation of ``tk.mallumo.kdb.sqlite.SqliteDB``, ``tk.mallumo.kdb.sqlite.Cursor``, ``tk.mallumo.kdb.sqlite.DbInsertStatement`` 
+* connector for
+  * SqLite ``tk.mallumo.kdb.sqlite.DbEngine.createSQLite``,
+  * MySql ``tk.mallumo.kdb.sqlite.DbEngine.createMySql``,
+* you can use yours own jdbc implementations for other database engines, by custom implementation of ``tk.mallumo.kdb.sqlite.DbEngine``, ``tk.mallumo.kdb.sqlite.Cursor``, ``tk.mallumo.kdb.sqlite.DbInsertStatement`` 
   * mysql
   * oracle
   * ...
@@ -80,17 +83,14 @@ import tk.mallumo.kdb
 
 // ANDROID:
 val kdb by lazy {
-    Kdb.get(SqliteDB(isDebug = true, dbPath = applicationContext.defaultSqLitePath()))
+    Kdb.get(DbEngine.createSQLite(isDebug = true, path = applicationContext.defaultSqLitePath()))
 }
 
 //DESKTOP:
 val kdb: Kdb by lazy {
-    Kdb.get(SqliteDB(isDebug = true, isSqLite = true) {
-        DriverManager.getConnection("jdbc:sqlite:/tmp/test.sqlite").apply {
-            autoCommit = false
-        }
-    })
-
+    Kdb.get(DbEngine.createSQLite(isDebug = true, path = "/tmp/test.sqlite"))
+    //OR
+    Kdb.get(DbEngine.createMySql(isDebug = true,  name = "usr-name", pass = "usr-pass", database = "database-scheme", host = "localhost",port = 3306))
 }
 ```
 
