@@ -7,13 +7,13 @@ import tk.mallumo.kdb.sqlite.*
 
 
 class Kdb internal constructor(
-    private val db: SqliteDB,
+    private val db: DbEngine,
     private val dbDefArray: MutableList<ImplKdbTableDef>,
     private val isDebug: Boolean,
-    internal val beforeInit: suspend SqliteDB.() -> Unit = {},
-    internal val afterInit: suspend SqliteDB.() -> Unit = {},
-    internal val beforeDatabaseChange: suspend SqliteDB.() -> Unit = {},
-    internal val afterDatabaseChange: suspend SqliteDB.() -> Unit = {},
+    internal val beforeInit: suspend DbEngine.() -> Unit = {},
+    internal val afterInit: suspend DbEngine.() -> Unit = {},
+    internal val beforeDatabaseChange: suspend DbEngine.() -> Unit = {},
+    internal val afterDatabaseChange: suspend DbEngine.() -> Unit = {},
 ) {
 
     companion object {
@@ -23,13 +23,13 @@ class Kdb internal constructor(
             level = DeprecationLevel.WARNING
         )
         fun newInstance(
-            sqlite: SqliteDB,
+            sqlite: DbEngine,
             isDebug: Boolean,
             dbDefArray: MutableList<ImplKdbTableDef>,
-            beforeInit: suspend SqliteDB.() -> Unit = {},
-            afterInit: suspend SqliteDB.() -> Unit = {},
-            beforeDatabaseChange: suspend SqliteDB.() -> Unit = {},
-            afterDatabaseChange: suspend SqliteDB.() -> Unit = {},
+            beforeInit: suspend DbEngine.() -> Unit = {},
+            afterInit: suspend DbEngine.() -> Unit = {},
+            beforeDatabaseChange: suspend DbEngine.() -> Unit = {},
+            afterDatabaseChange: suspend DbEngine.() -> Unit = {},
         ): Kdb = Kdb(
             sqlite,
             dbDefArray,

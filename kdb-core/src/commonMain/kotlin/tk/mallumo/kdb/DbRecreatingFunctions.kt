@@ -9,13 +9,13 @@ internal object DbRecreatingFunctions {
         "NAME_TABLE, NAME_COLUMN, TYPE, DEFAULT_VALUE, IS_UNIQUE, IS_INDEXED"
 
     private const val dbDefColumnsCreator =
-        "NAME_TABLE LONGVARCHAR, NAME_COLUMN LONGVARCHAR, TYPE LONGVARCHAR, DEFAULT_VALUE LONGVARCHAR, IS_UNIQUE INT, IS_INDEXED INT"
+        "NAME_TABLE VARCHAR(20), NAME_COLUMN VARCHAR(20), TYPE VARCHAR(20), DEFAULT_VALUE VARCHAR(20), IS_UNIQUE INT, IS_INDEXED INT"
 
     private const val dbDefTable = "__DB_DEF"
 
     suspend fun rebuildDatabase(
         kdb: Kdb,
-        db: SqliteDB,
+        db: DbEngine,
         dbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ) {
@@ -25,20 +25,21 @@ internal object DbRecreatingFunctions {
 
     private suspend fun rebuildTables(
         kdb: Kdb,
-        db: SqliteDB,
+        db: DbEngine,
         oldDefinitionArr: List<ImplKdbTableDef>,
         newDefinitionArr: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ) {
         var writeChanges = false
+        val indexes = readIndexes(db)
+
         newDefinitionArr.forEach { newDef ->
             val oldDef = oldDefinitionArr.firstOrNull { it.name == newDef.name }
-
             if (oldDef == null) {
-                newDef.sqlCreator(redeclareType = false, isSqlite = true).forEach {
+                newDef.sqlCreator(redeclareType = false, isSqlite = db.isSqlite).forEach {
                     db.exec(it)
                 }
-                newDef.applyIndexes().forEach {
+                newDef.applyIndexes(db.isSqlite, indexes).forEach {
                     db.exec(it)
                 }
                 writeChanges = true
@@ -67,19 +68,19 @@ internal object DbRecreatingFunctions {
 
                 alterColumn.forEach {
                     try {
-                        if (debug) logger("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}")
-                        db.exec("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}")
+                        if (debug) logger("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(db.isSqlite)}")
+                        db.exec("ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(db.isSqlite)}")
                     } catch (e: Exception) {
                         if (debug) logger(
                             e.message
-                                ?: "ERR: ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(true)}"
+                                ?: "ERR: ALTER TABLE ${newDef.name} ADD ${it.sqlCreator(db.isSqlite)}"
                         )
                     }
                 }
 
                 if (redeclareTable) {
                     writeChanges = true
-                    newDef.sqlCreator(true, isSqlite = true).forEach {
+                    newDef.sqlCreator(true, isSqlite = db.isSqlite).forEach {
                         db.exec(it)
                     }
 
@@ -91,9 +92,12 @@ internal object DbRecreatingFunctions {
                     db.exec(newDef.redeclare3_Rename())
                 }
 
-                if (newDef.getIndexes().toString() != oldDef.getIndexes().toString()) {
+                val newIndexes = newDef.getIndexes().joinToString { it.toString() }
+                val oldIndexes = oldDef.getIndexes().joinToString { it.toString() }
+
+                if (newIndexes != oldIndexes) {
                     writeChanges = true
-                    newDef.applyIndexes(oldDef.getIndexes()).forEach {
+                    newDef.applyIndexes(db.isSqlite, indexes).forEach {
                         db.exec(it)
                     }
                 }
@@ -110,23 +114,22 @@ internal object DbRecreatingFunctions {
     }
 
 
-    private suspend fun writeNewDbDef(db: SqliteDB, dbDefArray: MutableList<ImplKdbTableDef>) = coroutineScope {
-        val isMySqlMode = false
+    private suspend fun writeNewDbDef(db: DbEngine, dbDefArray: MutableList<ImplKdbTableDef>) = coroutineScope {
+
         db.exec(
             """
             CREATE TABLE IF NOT EXISTS $dbDefTable (
-                        ${if (!isMySqlMode) dbDefColumns else dbDefColumnsCreator}, 
+                        ${if (db.isSqlite) dbDefColumns else dbDefColumnsCreator}, 
                 UNIQUE (NAME_TABLE, NAME_COLUMN)
-                        ${if (!isMySqlMode) "ON CONFLICT REPLACE" else ""})
+                        ${if (db.isSqlite) "ON CONFLICT REPLACE" else ""})
         """.trimIndent()
         )
 
         db.insert(
             """
-            ${if (!isMySqlMode) "INSERT" else "MERGE"}
-            INTO $dbDefTable (${dbDefColumns})
-            ${if (!isMySqlMode) "" else "KEY (NAME_TABLE, NAME_COLUMN)"}
+            INSERT INTO $dbDefTable (${dbDefColumns})
             VALUES (?,?,?,?,?,?)
+            ${if (db.isSqlite) "" else " ON DUPLICATE KEY UPDATE `NAME_TABLE`=VALUES(`NAME_TABLE`), `NAME_COLUMN`=VALUES(`NAME_COLUMN`)"}
         """.trimIndent()
         ) {
             dbDefArray.forEach { def ->
@@ -145,10 +148,14 @@ internal object DbRecreatingFunctions {
         val podm =
             dbDefArray.map { table -> table.columns.map { column -> "'${table.name}-${column.name}'" } }
                 .joinToString(",") { it.joinToString(",") }
-        db.exec("DELETE FROM $dbDefTable WHERE (NAME_TABLE || '-' || NAME_COLUMN) NOT IN ($podm)")
+
+        val concatWhere = if(db.isSqlite) " (NAME_TABLE || '-' || NAME_COLUMN) "
+        else " CONCAT(NAME_TABLE, '-', NAME_COLUMN) "
+
+        db.exec("DELETE FROM $dbDefTable WHERE $concatWhere NOT IN ($podm)")
     }
 
-    private suspend fun readOldDefDirect(db: SqliteDB): List<ImplKdbTableDef>? = coroutineScope {
+    private suspend fun readOldDefDirect(db: DbEngine): List<ImplKdbTableDef>? = coroutineScope {
         val map = HashMap<String, ImplKdbTableDef>()
         try {
             db.query(
@@ -189,9 +196,37 @@ internal object DbRecreatingFunctions {
         }
     }
 
+    private suspend fun readIndexes(db: DbEngine): MutableList<String> = coroutineScope {
+        buildList {
+            val cmd = if (db.isSqlite) {
+                """
+                SELECT name 
+                FROM sqlite_master 
+                WHERE type = 'index' AND name like 'INDEX_%'
+                """
+            } else {
+                """
+                select INDEX_NAME  as name
+                from information_schema.statistics
+                where TABLE_SCHEMA = database() AND INDEX_NAME like 'INDEX_%'
+                """.trimIndent()
+            }
+            runCatching {
+                db.query(cmd) { cursor ->
+                    while (cursor.next()) {
+                        cursor.string(0) { indexName ->
+                            add(indexName)
+                        }
+                    }
+                }
+
+            }.onFailure { it.printStackTrace() }
+        }.toMutableList()
+    }
+
 
     private suspend fun readOldDbDef(
-        db: SqliteDB,
+        db: DbEngine,
         newDbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ): List<ImplKdbTableDef> {
@@ -199,7 +234,7 @@ internal object DbRecreatingFunctions {
     }
 
     private suspend fun readOldDefFromTables(
-        db: SqliteDB,
+        db: DbEngine,
         newDbDefArray: MutableList<ImplKdbTableDef>,
         debug: Boolean
     ): List<ImplKdbTableDef> = coroutineScope {

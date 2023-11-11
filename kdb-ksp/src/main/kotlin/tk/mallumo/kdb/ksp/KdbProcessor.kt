@@ -125,7 +125,7 @@ import java.util.Locale"""
                 name = "KdbGeneratedInsert",
                 dependencies = dependenciesTables,
                 imports = """
-import tk.mallumo.kdb.sqlite.SqliteDB"""
+import tk.mallumo.kdb.sqlite.DbEngine"""
             ) {
                 generateInsertFunctions(tables)
             }

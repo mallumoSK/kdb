@@ -1,12 +1,23 @@
 package tk.mallumo.kdb
 
+
 class ImplKdbTableDef(
     var name: String = "",
     val columns: MutableList<Item> = mutableListOf()
 ) {
 
+    @JvmInline
+    value class IndexedField(private val data: Pair<String, String>) {
+        val name get() = data.first
+        val type get() = data.second
+        override fun toString(): String {
+            return "$name :: $type"
+        }
+    }
+
     fun getUnique(): List<String> = columns.filter { it.unique }.map { it.name }
-    fun getIndexes(): List<String> = columns.filter { it.index }.map { it.name }
+
+    fun getIndexes(): List<IndexedField> = columns.filter { it.index }.map { IndexedField(it.name to it.type) }
 
     override fun toString(): String {
         return "$name;${columns.joinToString(";") { it.toString() }}"
@@ -39,7 +50,7 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
     return StringBuilder().apply {
         append("\n${name} ")
         if (type == ImplKdbTableDef.ColumnType.TEXT && !isSqlite) {
-            append("LONGVARCHAR")
+            append("TEXT")
         } else {
             append(type)
         }
@@ -106,17 +117,47 @@ fun ImplKdbTableDef.redeclare3_Rename(): String {
     return "ALTER TABLE KDB_REDECLARE_TABLE_$name RENAME TO  $name"
 }
 
-fun ImplKdbTableDef.applyIndexes(oldIndexes: List<String> = listOf()): MutableList<String> {
+/*
+select INDEX_NAME
+from information_schema.statistics
+where TABLE_SCHEMA = database();
+
+--CREATE FULLTEXT INDEX I_FLOOR_ROUTE_JSON ON FLOOR_ROUTE(JSON); //TEXT
+--CREATE INDEX I_FLOOR_ROUTE_ID ON FLOOR_ROUTE(ID); //TEXTINT
+
+ */
+fun ImplKdbTableDef.applyIndexes(isSqlite: Boolean, currentIndexes: MutableList<String>): MutableList<String> {
     val newIndexes = getIndexes()
-        .filter { index -> columns.any { it.name == index } }
+        .filter { indexedField -> columns.any { tableField -> tableField.name == indexedField.name } }
 
     return mutableListOf<String>().apply {
-        newIndexes.forEach {
-            add("CREATE INDEX IF NOT EXISTS INDEX_${name}_${it} ON $name (${it})")
+        newIndexes.forEach { index ->
+            val indexName = "INDEX_${name}_${index.name}"
+            if (!currentIndexes.contains(indexName)) {
+                currentIndexes += indexName
+                if (isSqlite) {
+                    add("CREATE INDEX IF NOT EXISTS INDEX_${name}_${index.name} ON $name (${index.name})")
+                } else {
+                    if (index.type == ImplKdbTableDef.ColumnType.TEXT) {
+                        add("CREATE FULLTEXT INDEX INDEX_${name}_${index.name} ON $name (${index.name})")
+                    } else {
+                        add("CREATE INDEX INDEX_${name}_${index.name} ON $name (${index.name})")
+                    }
+                }
+            }
         }
-        oldIndexes.filterNot { index -> newIndexes.any { it == index } }
+        currentIndexes.filterNot { index -> newIndexes.any { it.name == index } }
             .forEach {
-                add("DROP INDEX IF EXISTS INDEX_${name}_${it}")
+                val indexName = "INDEX_${name}_${it}"
+                if (currentIndexes.contains(indexName)) {
+                    currentIndexes -= indexName
+                    if (isSqlite) {
+                        add("DROP INDEX IF EXISTS $indexName")
+                    } else {
+                        add("DROP INDEX $indexName")
+                    }
+                }
+
             }
     }
 }

@@ -24,7 +24,7 @@ open class BindingTEST_TABLE(var x: Double = 1.3) : TEST_TABLE()
 open class BindingTEST(var xyz: String = "")
 
 val kdb by lazy {
-    Kdb.get(SqliteDB(isDebug = true, dbPath = MainApplication.instance.defaultSqLitePath()))
+    Kdb.get(DbEngine(isDebug = true, dbPath = MainApplication.instance.defaultSqLitePath()))
 }
 
 class MainActivity : AppCompatActivity() {

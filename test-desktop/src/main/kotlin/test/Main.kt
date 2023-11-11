@@ -23,11 +23,7 @@ open class BindingTEST_TABLE(var x: Double = 1.3) : TEST_TABLE()
 open class BindingTEST(var xyz: String = "")
 
 val kdb: Kdb by lazy {
-    val sqlite = SqliteDB(isDebug = true, isSqLite = true) {
-        DriverManager.getConnection("jdbc:sqlite:/tmp/test.sqlite").apply {
-            autoCommit = false
-        }
-    }
+    val sqlite = DbEngine.createSQLite(isDebug = true, "/tmp/test.sqlite")
     Kdb.get(sqlite,
         { println("-BEFORE INIT") },
         { println("-AFTER INIT") },

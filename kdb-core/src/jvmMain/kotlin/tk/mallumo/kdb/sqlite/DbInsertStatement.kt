@@ -2,10 +2,12 @@
 
 package tk.mallumo.kdb.sqlite
 
-@Suppress("unused")
-actual open class DbInsertStatement actual constructor(val db: SqliteDB, command: String) {
+import java.sql.Statement
 
-    private val statement = db.conn!!.prepareStatement(command)
+@Suppress("unused")
+actual open class DbInsertStatement actual constructor(val db: DbEngine, command: String) {
+
+    private val statement = db.conn!!.prepareStatement(command,  Statement.RETURN_GENERATED_KEYS)
     private var rows = 0
 
     private var rowAdded = false

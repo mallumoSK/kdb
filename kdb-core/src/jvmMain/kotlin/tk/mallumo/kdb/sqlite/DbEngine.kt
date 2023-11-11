@@ -3,14 +3,29 @@ package tk.mallumo.kdb.sqlite
 import tk.mallumo.kdb.*
 import java.sql.*
 
+
 @Suppress("unused", "UNUSED_PARAMETER")
-actual open class SqliteDB(
+actual open class DbEngine(
     val isDebug: Boolean,
-    isSqLite: Boolean,
+    sqlite:Boolean,
     private val connectionCallback: () -> Connection
 ) {
 
+    companion object{
+        fun createSQLite(isDebug:Boolean, path:String)  =DbEngine(isDebug = isDebug, sqlite = true) {
+            DriverManager.getConnection("jdbc:sqlite:${path}").apply {
+                autoCommit = false
+            }
+        }
+        fun createMySql(isDebug:Boolean, name:String, pass:String,database:String, host:String,port:Int)  =DbEngine(isDebug = isDebug, sqlite = false) {
+            DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", name, pass).apply {
+                autoCommit = false
+            }
+        }
+    }
     actual open val path: String = ""
+
+    actual open val isSqlite: Boolean= sqlite
 
     var conn: Connection? = null
 
@@ -28,7 +43,7 @@ actual open class SqliteDB(
 
     actual open fun insert(command: String, body: (DbInsertStatement) -> Unit) {
         if (isDebug) logger(command)
-        with(DbInsertStatement(this@SqliteDB, command)) {
+        with(DbInsertStatement(this@DbEngine, command)) {
             prepare()
             body(this)
         }
@@ -73,6 +88,8 @@ actual open class SqliteDB(
             it.close()
         }
     }
+
+
 }
 
 @Suppress("UNUSED_PARAMETER")

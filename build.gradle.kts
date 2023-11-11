@@ -15,3 +15,17 @@ allprojects {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
 }
+
+
+tasks.register("_publish_local") {
+    group = "_"
+    dependsOn(":kdb-core:publishToMavenLocal")
+    dependsOn(":kdb-ksp:publishToMavenLocal")
+}
+
+
+tasks.register("_publish_remote") {
+    group = "_"
+    dependsOn(":kdb-core:publish")
+    dependsOn(":kdb-ksp:publish")
+}

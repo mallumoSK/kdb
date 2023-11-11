@@ -3,16 +3,23 @@ package tk.mallumo.kdb.sqlite
 import android.content.*
 import android.database.sqlite.*
 import tk.mallumo.kdb.*
+import java.sql.*
 
 @Suppress("unused")
 fun Context.defaultSqLitePath(name: String = "default-kdb.sqlite"): String = getDatabasePath(name).absolutePath
 
 @Suppress("unused")
-actual open class SqliteDB(@Suppress("MemberVisibilityCanBePrivate") val isDebug: Boolean, dbPath: String) {
+actual open class DbEngine(@Suppress("MemberVisibilityCanBePrivate") val isDebug: Boolean, dbPath: String) {
 
     actual open val path: String = dbPath
 
     var conn: SQLiteDatabase? = null
+
+    actual open val isSqlite: Boolean = true
+
+   companion object{
+       fun createSQLite(isDebug:Boolean, path:String)  =DbEngine(isDebug = isDebug,  path)
+   }
 
     actual open fun open() {
         conn = SQLiteDatabase.openOrCreateDatabase(path, null)
@@ -28,7 +35,7 @@ actual open class SqliteDB(@Suppress("MemberVisibilityCanBePrivate") val isDebug
     actual open fun insert(command: String, body: (DbInsertStatement) -> Unit) {
         @Suppress("MemberVisibilityCanBePrivate")
         if (isDebug) logger(command)
-        with(DbInsertStatement(this@SqliteDB, command)) {
+        with(DbInsertStatement(this@DbEngine, command)) {
             prepare()
             body(this)
         }
@@ -65,5 +72,6 @@ actual open class SqliteDB(@Suppress("MemberVisibilityCanBePrivate") val isDebug
         if (isDebug) logger(sql)
         conn?.execSQL(sql)
     }
+
 }
 

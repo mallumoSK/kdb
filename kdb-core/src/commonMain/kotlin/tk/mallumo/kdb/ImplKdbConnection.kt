@@ -3,7 +3,7 @@ package tk.mallumo.kdb
 import tk.mallumo.kdb.sqlite.*
 
 class ImplKdbConnection internal constructor(
-    val db: SqliteDB,
+    val db: DbEngine,
     private val debug: Boolean
 ) {
 

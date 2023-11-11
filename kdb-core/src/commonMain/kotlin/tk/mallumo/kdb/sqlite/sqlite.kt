@@ -2,9 +2,10 @@ package tk.mallumo.kdb.sqlite
 
 
 @Suppress("unused")
-expect open class SqliteDB {
+expect open class DbEngine {
 
     open val path: String
+    open val isSqlite: Boolean
 
     open fun open()
     open fun close()
@@ -33,7 +34,7 @@ expect open class Cursor {
 }
 
 @Suppress("unused")
-expect open class DbInsertStatement(db: SqliteDB, command: String) {
+expect open class DbInsertStatement(db: DbEngine, command: String) {
     protected val ids: MutableList<Long>
 
     open fun prepare()

@@ -4,11 +4,11 @@ fun generateCreator() = """
 private val databases = hashMapOf<String,Kdb>()
  
 fun Kdb.Companion.get(
-    sqlite:tk.mallumo.kdb.sqlite.SqliteDB,
-    beforeInit: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {},
-    afterInit: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {},
-    beforeDatabaseChange: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {},
-    afterDatabaseChange: suspend tk.mallumo.kdb.sqlite.SqliteDB.() -> Unit = {})
+    sqlite:tk.mallumo.kdb.sqlite.DbEngine,
+    beforeInit: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
+    afterInit: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
+    beforeDatabaseChange: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
+    afterDatabaseChange: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {})
     :Kdb{
         return databases.getOrPut(sqlite.path){
             @Suppress("DEPRECATION")
@@ -141,6 +141,9 @@ fun generateInsertFunctions(
 
     map.forEach { entry ->
 
+        val columnNamesNotUnique = entry.property
+            .filter { it.isUnique }
+            .map { "`${it.propertyName.uppercase()}`" }
         val comumns = entry.property.map { "`${it.propertyName.uppercase()}`" }
             .joinToString(",", prefix = "(", postfix = ")")
 
@@ -163,15 +166,31 @@ fun generateInsertFunctions(
             }
         }.joinToString("\n", prefix = "\n", postfix = "\n")
 
+        val suffixStatement = buildString {
+            if(columnNamesNotUnique.count() == 0){
+                append("val sufix =\"\"")
+            }else{
+                append("val sufix = if(db.isSqlite) \"\"")
+                appendLine()
+                append("\t\telse \" ON DUPLICATE KEY UPDATE ")
+                append(columnNamesNotUnique.joinToString(",") { "${it}=VALUES($it)" })
+                append("\"")
+            }
+        }
+
         val insert = """"INSERT INTO ${
             entry.simpleName
-        } $comumns VALUES $values""""
+        } $comumns VALUES $values ${"\$"}sufix" """
+
+
         append(
             """
-    fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: SqliteDB):List<Long>{
+    fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: DbEngine):List<Long>{
         var rowIds:List<Long> = emptyList()
         if (items.isEmpty()) return rowIds
     
+        $suffixStatement
+        
         db.insert(${insert}) {
             items.forEach { item ->
 $insertVal

@@ -6,7 +6,7 @@ import android.database.sqlite.*
 
 @Suppress("unused")
 actual open class DbInsertStatement actual constructor(
-    @Suppress("MemberVisibilityCanBePrivate") val db: SqliteDB,
+    @Suppress("MemberVisibilityCanBePrivate") val db: DbEngine,
     private val command: String
 ) {
 
