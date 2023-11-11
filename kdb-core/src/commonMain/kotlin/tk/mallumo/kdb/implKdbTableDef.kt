@@ -81,9 +81,11 @@ fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean
 
         getUnique().also {
             if (it.isNotEmpty()) {
-                append(",\nUNIQUE (${it.joinToString(",")})")
                 if (isSqlite) {
+                    append(",\nUNIQUE (${it.joinToString(",")})")
                     append(" ON CONFLICT REPLACE")
+                }else{
+                    append(",\nUNIQUE KEY `UNIQUE_ID` (${it.joinToString(",")})")
                 }
             }
         }

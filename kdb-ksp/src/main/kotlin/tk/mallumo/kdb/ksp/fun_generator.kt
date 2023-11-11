@@ -141,9 +141,14 @@ fun generateInsertFunctions(
 
     map.forEach { entry ->
 
-        val columnNamesNotUnique = entry.property
+        val columnNamesAreUnique = entry.property
             .filter { it.isUnique }
             .map { "`${it.propertyName.uppercase()}`" }
+
+        val columnNamesNotUnique = entry.property
+            .filter { !it.isUnique }
+            .map { "`${it.propertyName.uppercase()}`" }
+
         val comumns = entry.property.map { "`${it.propertyName.uppercase()}`" }
             .joinToString(",", prefix = "(", postfix = ")")
 
@@ -167,13 +172,17 @@ fun generateInsertFunctions(
         }.joinToString("\n", prefix = "\n", postfix = "\n")
 
         val suffixStatement = buildString {
-            if(columnNamesNotUnique.count() == 0){
+            if(columnNamesAreUnique.count() == 0){
                 append("val sufix =\"\"")
             }else{
                 append("val sufix = if(db.isSqlite) \"\"")
                 appendLine()
                 append("\t\telse \" ON DUPLICATE KEY UPDATE ")
-                append(columnNamesNotUnique.joinToString(",") { "${it}=VALUES($it)" })
+                if(columnNamesNotUnique.count()==0){
+                    append(columnNamesAreUnique.joinToString(",") { "${it}=VALUES($it)" })
+                }else{
+                    append(columnNamesNotUnique.joinToString(",") { "${it}=VALUES($it)" })
+                }
                 append("\"")
             }
         }
