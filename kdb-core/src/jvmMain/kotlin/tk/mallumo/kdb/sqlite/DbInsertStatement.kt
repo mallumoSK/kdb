@@ -7,7 +7,7 @@ import java.sql.Statement
 @Suppress("unused")
 actual open class DbInsertStatement actual constructor(val db: DbEngine, command: String) {
 
-    private val statement = db.conn!!.prepareStatement(command,  Statement.RETURN_GENERATED_KEYS)
+    private val statement = db.getConnection().prepareStatement(command,  Statement.RETURN_GENERATED_KEYS)
     private var rows = 0
 
     private var rowAdded = false
@@ -53,7 +53,7 @@ actual open class DbInsertStatement actual constructor(val db: DbEngine, command
         if (!rowAdded) add()
 
         statement.executeBatch()
-        db.conn!!.commit()
+        db.getConnection().commit()
 
         val newIds = mutableListOf<Long>()
         statement.generatedKeys.also { rs ->
