@@ -5,6 +5,7 @@ private val databases = hashMapOf<String,Kdb>()
  
 fun Kdb.Companion.get(
     sqlite:tk.mallumo.kdb.sqlite.DbEngine,
+    reconfigureDatabaseOnStart:Boolean = true,
     beforeInit: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
     afterInit: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
     beforeDatabaseChange: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
@@ -15,6 +16,7 @@ fun Kdb.Companion.get(
             Kdb.Companion.newInstance(
                 sqlite,
                 sqlite.isDebug,
+                reconfigureDatabaseOnStart,
                 KdbGeneratedDefStructure.getTablesDef(),
                 beforeInit,
                 afterInit,

@@ -10,6 +10,7 @@ class Kdb internal constructor(
     private val db: DbEngine,
     private val dbDefArray: MutableList<ImplKdbTableDef>,
     private val isDebug: Boolean,
+    private val reconfigureDatabaseOnStart:Boolean = true,
     internal val beforeInit: suspend DbEngine.() -> Unit = {},
     internal val afterInit: suspend DbEngine.() -> Unit = {},
     internal val beforeDatabaseChange: suspend DbEngine.() -> Unit = {},
@@ -18,26 +19,28 @@ class Kdb internal constructor(
 
     companion object {
         @Deprecated(
-            message = "use Kdb.Companion.get(sqlite, beforeInit, afterInit, beforeDatabaseChange, afterDatabaseChange)",
+            message = "use Kdb.Companion.get(sqlite, beforeInit, reconfigureDatabaseOnStart, afterInit, beforeDatabaseChange, afterDatabaseChange)",
             replaceWith = ReplaceWith("get"),
             level = DeprecationLevel.WARNING
         )
         fun newInstance(
             sqlite: DbEngine,
             isDebug: Boolean,
+            reconfigureDatabaseOnStart:Boolean = true,
             dbDefArray: MutableList<ImplKdbTableDef>,
             beforeInit: suspend DbEngine.() -> Unit = {},
             afterInit: suspend DbEngine.() -> Unit = {},
             beforeDatabaseChange: suspend DbEngine.() -> Unit = {},
-            afterDatabaseChange: suspend DbEngine.() -> Unit = {},
+            afterDatabaseChange: suspend DbEngine.() -> Unit = {}
         ): Kdb = Kdb(
             sqlite,
             dbDefArray,
             isDebug,
+            reconfigureDatabaseOnStart,
             beforeInit,
             afterInit,
             beforeDatabaseChange,
-            afterDatabaseChange
+            afterDatabaseChange,
         )
 
         internal val kdbLock = Mutex()
@@ -72,7 +75,9 @@ class Kdb internal constructor(
 
         db.open()
         db.beforeInit()
-        DbRecreatingFunctions.rebuildDatabase(this, db, dbDefArray, isDebug)
+        if(reconfigureDatabaseOnStart){
+            DbRecreatingFunctions.rebuildDatabase(this, db, dbDefArray, isDebug)
+        }
         connection = ImplKdbConnection(db, isDebug)
         isInitComplete = true
         db.afterInit()
