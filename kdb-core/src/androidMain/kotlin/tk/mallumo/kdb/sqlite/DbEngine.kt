@@ -4,6 +4,7 @@ import android.content.*
 import android.database.sqlite.*
 import tk.mallumo.kdb.*
 import java.sql.*
+import kotlin.reflect.*
 
 @Suppress("unused")
 fun Context.defaultSqLitePath(name: String = "default-kdb.sqlite"): String = getDatabasePath(name).absolutePath
@@ -68,10 +69,9 @@ actual open class DbEngine(@Suppress("MemberVisibilityCanBePrivate") val isDebug
     }
 
 
-    actual open fun call(sql: String) {
-        if (isDebug) logger(sql)
-        conn?.execSQL(sql)
+    actual open fun call(cmd: String, vararg args: KProperty0<*>) {
+        if (isDebug) logger(cmd)
+        error("undefined function")
     }
-
 }
 

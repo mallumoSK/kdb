@@ -1,6 +1,7 @@
 package tk.mallumo.kdb
 
 import tk.mallumo.kdb.sqlite.*
+import kotlin.reflect.*
 
 class ImplKdbConnection internal constructor(
     val db: DbEngine,
@@ -13,10 +14,9 @@ class ImplKdbConnection internal constructor(
         execIUD(sql)
     }
 
-    fun call(sql: String) {
+    fun call(sql: String, vararg args: KProperty0<*>) {
         if (sql.isEmpty()) return
-        if (debug) logger(sql)
-        db.call(sql)
+        db.call(sql, *args)
     }
 
     private fun execIUD(command: String) {

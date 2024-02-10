@@ -13,3 +13,4 @@ annotation class KdbColumnIndex
 
 @Target(AnnotationTarget.CLASS)
 annotation class KdbQI
+

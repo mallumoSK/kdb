@@ -4,6 +4,7 @@ package tk.mallumo.kdb
 
 import kotlinx.coroutines.sync.*
 import tk.mallumo.kdb.sqlite.*
+import kotlin.reflect.*
 
 
 class Kdb internal constructor(
@@ -96,9 +97,9 @@ class Kdb internal constructor(
         }
     }
 
-    suspend fun call(sql: String) {
+    suspend fun call(sql: String, vararg args: KProperty0<*> = arrayOf()) {
         connection {
-            call(sql)
+            call(sql, *args)
         }
     }
 }

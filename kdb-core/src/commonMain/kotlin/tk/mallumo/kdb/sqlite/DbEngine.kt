@@ -1,5 +1,7 @@
 package tk.mallumo.kdb.sqlite
 
+import kotlin.reflect.*
+
 @Suppress("unused")
 expect open class DbEngine {
 
@@ -12,5 +14,5 @@ expect open class DbEngine {
     open fun exec(command: String)
     open fun query(query: String, callback: (cursor: Cursor) -> Unit)
     open fun queryUnclosed(query: String): ((Cursor) -> Unit)
-    open fun call(sql: String)
+    open fun call(cmd: String, vararg args: KProperty0<*>)
 }
