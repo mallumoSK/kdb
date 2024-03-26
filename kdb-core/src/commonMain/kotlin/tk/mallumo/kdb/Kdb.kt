@@ -102,4 +102,9 @@ class Kdb internal constructor(
             call(sql, *args)
         }
     }
+    suspend fun reconnect(){
+        kdbLock.withLock {
+            db.reconnect()
+        }
+    }
 }

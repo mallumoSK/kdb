@@ -73,5 +73,10 @@ actual open class DbEngine(@Suppress("MemberVisibilityCanBePrivate") val isDebug
         if (isDebug) logger(cmd)
         error("undefined function")
     }
+
+    actual open fun reconnect() {
+        close()
+        open()
+    }
 }
 

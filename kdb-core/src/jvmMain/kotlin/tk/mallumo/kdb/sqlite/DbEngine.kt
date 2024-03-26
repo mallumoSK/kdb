@@ -162,6 +162,11 @@ actual open class DbEngine(
             else -> error("undefined type")
         }
     }
+
+    actual open fun reconnect() {
+        close()
+        open()
+    }
 }
 
 
