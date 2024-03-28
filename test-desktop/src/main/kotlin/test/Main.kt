@@ -24,11 +24,12 @@ open class BindingTEST(var xyz: String = "")
 
 val kdb: Kdb by lazy {
     val sqlite = DbEngine.createSQLite(isDebug = true, "/tmp/test.sqlite")
-    Kdb.get(sqlite,
-        { println("-BEFORE INIT") },
-        { println("-AFTER INIT") },
-        { println("--BEFORE RECONFIGURE") },
-        { println("--AFTER RECONFIGURE") })
+    Kdb.get(sqlite = sqlite,
+        reconfigureDatabaseOnStart = true,
+        beforeInit = { println("-BEFORE INIT") },
+        afterInit = { println("-AFTER INIT") },
+        beforeDatabaseChange = { println("--BEFORE RECONFIGURE") },
+        afterDatabaseChange = { println("--AFTER RECONFIGURE") })
 
 }
 
