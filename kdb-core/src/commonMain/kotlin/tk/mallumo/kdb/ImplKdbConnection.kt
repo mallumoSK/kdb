@@ -10,7 +10,6 @@ class ImplKdbConnection internal constructor(
 
     fun exec(sql: String) {
         if (sql.isEmpty()) return
-        if (debug) logger(sql)
         execIUD(sql)
     }
 
@@ -20,7 +19,6 @@ class ImplKdbConnection internal constructor(
     }
 
     private fun execIUD(command: String) {
-        if (debug) logger(command)
         db.exec(command)
     }
 
