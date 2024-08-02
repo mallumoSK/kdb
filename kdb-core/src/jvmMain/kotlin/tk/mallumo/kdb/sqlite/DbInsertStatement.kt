@@ -2,7 +2,9 @@
 
 package tk.mallumo.kdb.sqlite
 
-import java.sql.Statement
+import java.math.*
+import java.sql.*
+
 
 @Suppress("unused")
 actual open class DbInsertStatement actual constructor(val db: DbEngine, command: String) {
@@ -34,8 +36,20 @@ actual open class DbInsertStatement actual constructor(val db: DbEngine, command
     }
 
     actual open fun double(index: Int, callback: () -> Double) {
-        statement.setDouble(index + 1, callback.invoke())
+        statement.setDouble(index + 1, callback.invoke().truncateDecimal(10))
         rowAdded = false
+    }
+
+    private fun Double.truncateDecimal(numberOfDecimals: Int): Double {
+        return if (this > 0) {
+            BigDecimal(toString())
+                .setScale(numberOfDecimals, RoundingMode.FLOOR)
+                .toDouble()
+        } else {
+            BigDecimal(toString())
+                .setScale(numberOfDecimals, RoundingMode.CEILING)
+                .toDouble()
+        }
     }
 
     actual open fun add() {

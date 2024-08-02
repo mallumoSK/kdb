@@ -10,12 +10,12 @@ object Deps {
     }
 
     object core {
-        const val version = "${Deps.version.ksp}-1.3.4"
+        const val version = "${Deps.version.ksp}-1.3.6"
         const val artifact = "kdb-core"
     }
 
     object ksp {
-        const val version = core.version
+        const val version =  "${Deps.version.ksp}-1.3.4"
         const val artifact = "kdb-ksp"
     }
 

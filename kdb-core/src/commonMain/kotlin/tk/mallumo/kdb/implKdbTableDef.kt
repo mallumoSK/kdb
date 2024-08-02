@@ -57,7 +57,7 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
 
             ImplKdbTableDef.ColumnType.NUMERIC -> {
                 if (isSqlite) append(type)
-                else append("DECIMAL(10,10)")
+                else append("DECIMAL(20,10)")
             }
 
             else -> append(type)
