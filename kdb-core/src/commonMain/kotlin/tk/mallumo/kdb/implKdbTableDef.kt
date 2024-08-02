@@ -49,11 +49,20 @@ class ImplKdbTableDef(
 fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
     return StringBuilder().apply {
         append("\n${name} ")
-        if (type == ImplKdbTableDef.ColumnType.TEXT && !isSqlite) {
-            append("TEXT")
-        } else {
-            append(type)
+        when (type) {
+            ImplKdbTableDef.ColumnType.TEXT -> {
+                if (isSqlite) append(type)
+                else append("TEXT")
+            }
+
+            ImplKdbTableDef.ColumnType.NUMERIC -> {
+                if (isSqlite) append(type)
+                else append("DECIMAL(10,10)")
+            }
+
+            else -> append(type)
         }
+
         if (defaultValue.isNotEmpty()) {
             append(" NOT NULL DEFAULT (${defaultValue})")
 
@@ -84,7 +93,7 @@ fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean
                 if (isSqlite) {
                     append(",\nUNIQUE (${it.joinToString(",")})")
                     append(" ON CONFLICT REPLACE")
-                }else{
+                } else {
                     append(",\nUNIQUE KEY `UNIQUE_ID` (${it.joinToString(",")})")
                 }
             }
