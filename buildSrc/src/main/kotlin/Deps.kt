@@ -10,7 +10,7 @@ object Deps {
     }
 
     object core {
-        const val version = "${Deps.version.ksp}-1.3.6"
+        const val version = "${Deps.version.ksp}-1.3.7"
         const val artifact = "kdb-core"
     }
 
@@ -23,6 +23,7 @@ object Deps {
         const val coroutines = "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0"
         const val coroutinesAndroid = "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0"
         const val sqliteJdbc = "org.xerial:sqlite-jdbc:3.39.3.0"
+        const val mariadbJdbc = "org.mariadb.jdbc:mariadb-java-client:3.4.1"
         const val ksp = "com.google.devtools.ksp:symbol-processing-api:${version.ksp}"
     }
 }

@@ -26,6 +26,12 @@ actual open class DbEngine(
             }
         }
 
+        fun createMadiaDb(isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(isDebug = isDebug, sqlite = false) {
+            DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", name, pass).apply {
+                autoCommit = false
+            }
+        }
+
         fun createProperties(name: String, pass: String): Properties = Properties().apply {
             setProperty("user", name)
             setProperty("password", pass)
@@ -33,6 +39,12 @@ actual open class DbEngine(
 
         fun createMySql(isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(isDebug = isDebug, sqlite = false) {
             DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", properties).apply {
+                autoCommit = false
+            }
+        }
+
+        fun createMadiaDb(isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(isDebug = isDebug, sqlite = false) {
+            DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", properties).apply {
                 autoCommit = false
             }
         }
