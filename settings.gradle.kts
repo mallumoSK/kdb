@@ -1,8 +1,33 @@
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
+@Suppress("UnstableApiUsage")
+dependencyResolutionManagement {
+    repositories {
+        google {
+            mavenContent {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
+        mavenCentral()
+        maven("https://repo.repsy.io/mvn/mallumo/public")
+    }
+}
+
+@Suppress("UnstableApiUsage")
 pluginManagement {
     repositories {
-        google()
+        google {
+            mavenContent {
+                includeGroupAndSubgroups("androidx")
+                includeGroupAndSubgroups("com.android")
+                includeGroupAndSubgroups("com.google")
+            }
+        }
+        mavenCentral()
         gradlePluginPortal()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://repo.repsy.io/mvn/mallumo/public")
     }
 }
 

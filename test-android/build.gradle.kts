@@ -1,16 +1,15 @@
 plugins {
-    id("com.android.application")
-    id("com.google.devtools.ksp")
-    kotlin("android")
+    alias(libs.plugins.android.app)
+    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
     defaultConfig {
         applicationId = "tk.mallumo.test.android"
         namespace = "tk.mallumo.test.android"
-        compileSdk = 33
-        minSdk = 21
-        targetSdk = 33
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        compileSdk = libs.versions.android.targetSdk.get().toInt()
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
     }
@@ -34,23 +33,17 @@ android {
     }
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
-
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation(libs.androidx.core)
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.10.0")
 
-    implementation(Deps.lib.coroutinesAndroid)
+    implementation(libs.kotlin.coroutines)
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
 }
 

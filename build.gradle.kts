@@ -1,19 +1,16 @@
-plugins {
-    kotlin("multiplatform") version Deps.version.kotlin apply false
-    kotlin("jvm") version Deps.version.kotlin apply false
-    kotlin("android") version Deps.version.kotlin apply false
-    id("com.android.library") version Deps.version.agp apply false
-    id("com.google.devtools.ksp") version Deps.version.ksp apply false
-}
+import java.util.*
 
-allprojects {
-    repositories {
-        mavenLocal()
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-        maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    }
+plugins {
+//    kotlin("multiplatform") version Deps.version.kotlin apply false
+//    kotlin("jvm") version Deps.version.kotlin apply false
+//    kotlin("android") version Deps.version.kotlin apply false
+//    id("com.android.library") version Deps.version.agp apply false
+//    id("com.google.devtools.ksp") version Deps.version.ksp apply false
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.ksp) apply false
+    alias(libs.plugins.android.lib) apply false
+    alias(libs.plugins.android.app) apply false
 }
 
 
@@ -29,3 +26,5 @@ tasks.register("_publish_remote") {
     dependsOn(":kdb-core:publish")
     dependsOn(":kdb-ksp:publish")
 }
+
+

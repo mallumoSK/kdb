@@ -1,43 +1,49 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.*
+import org.jetbrains.kotlin.gradle.dsl.*
+import java.util.*
+
 plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.lib)
     id("maven-publish")
-    kotlin("multiplatform")
-    id("com.android.library")
 }
 
-group = Deps.group
-version = Deps.core.version
+val current = libs.me.kdb.core.get()
 
-java.toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+group = current.group
+version = current.version!!
+
 
 kotlin {
-    jvm() {
-        compilations.all {
-            kotlinOptions.jvmTarget = "11"
-        }
-    }
+    jvmToolchain(17)
+
+    jvm()
+
     androidTarget {
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_11)
+        }
         publishLibraryVariants("release")
         publishLibraryVariantsGroupedByFlavor = true
     }
+
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                api(Deps.lib.coroutines)
-            }
+        commonMain.dependencies {
+            api(libs.kotlin.coroutines)
         }
-        val jvmMain by getting
-        val androidMain by getting
     }
 }
 
-@Suppress("UnstableApiUsage")
 android {
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+//    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
 
     defaultConfig {
-        namespace = "${Deps.group}.${Deps.core.artifact.replace("-",".")}"
-        compileSdk = 33
-        minSdk = 21
+        namespace = "${current.group}.${current.name.replace("-", ".")}"
+        minSdk = libs.versions.android.minSdk.get().toInt()
+        compileSdk = libs.versions.android.targetSdk.get().toInt()
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -46,7 +52,13 @@ android {
     lint {
         abortOnError = false
         checkReleaseBuilds = false
+        targetSdk = libs.versions.android.targetSdk.get().toInt()
         disable += setOf("TypographyFractions", "TypographyQuotes")
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
     }
     buildFeatures {
         buildConfig = false
@@ -68,4 +80,26 @@ publishing {
             }
         }
     }
+}
+
+val Project.propertiesLocal: LocalProperties get() = LocalProperties.get(this)
+
+class LocalProperties private constructor(private val project: Project) {
+    val prop = Properties().apply {
+        project.rootProject.file("local.properties").reader().use {
+            load(it)
+        }
+    }
+
+    companion object {
+        private lateinit var instance: LocalProperties
+        internal fun get(project: Project): LocalProperties {
+            if (!::instance.isInitialized) {
+                instance = LocalProperties(project)
+            }
+            return instance
+        }
+    }
+
+    operator fun get(key: String): String? = prop[key] as? String
 }

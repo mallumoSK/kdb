@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm")
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.kotlin.ksp)
     application
-    id("com.google.devtools.ksp")
 }
 
 group = "tk.mallumo"
@@ -10,8 +10,8 @@ version = "1.0"
 dependencies {
     implementation(project(":kdb-core"))
     ksp(project(":kdb-ksp"))
-    implementation(Deps.lib.sqliteJdbc)
-    implementation(Deps.lib.coroutines)
+    implementation(libs.kdb.sqlite)
+    implementation(libs.kotlin.coroutines)
 }
 
 kotlin {
@@ -26,7 +26,7 @@ application {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(11))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
 }
 
 ksp.arg("commonSourcesOnly", "true")
