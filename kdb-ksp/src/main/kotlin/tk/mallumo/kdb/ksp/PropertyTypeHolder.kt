@@ -17,7 +17,8 @@ data class PropertyTypeHolder(
     val sqlColumnTypeName: String,
     val defaultValue: String,
     val isUnique: Boolean,
-    val isIndex: Boolean
+    val isIndex: Boolean,
+    val columnSize:Int
 ) {
 
 
@@ -63,6 +64,14 @@ data class PropertyTypeHolder(
 
             val isUnique = prop.annotations.any { it.shortName.asString() == "KdbColumnUnique" }
             val isIndex = prop.annotations.any { it.shortName.asString() == "KdbColumnIndex" }
+            val columnSize = prop.annotations
+                .firstOrNull { it.shortName.asString() == "KdbColumnSize" }
+                ?.arguments
+                ?.first { it.name?.asString() == "size" }
+                ?.value
+                ?.toString()
+                ?.toIntOrNull()
+                ?:0
             return when (typeName) {
                 in directTypes -> {
                     PropertyTypeHolder(
@@ -72,7 +81,8 @@ data class PropertyTypeHolder(
                         sqlColumnTypeName,
                         defaultValue,
                         isUnique,
-                        isIndex
+                        isIndex,
+                        columnSize
                     )
                 }
                 else -> null

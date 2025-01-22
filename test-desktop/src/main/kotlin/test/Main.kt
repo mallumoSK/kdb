@@ -8,8 +8,12 @@ import java.sql.*
 
 @KdbTable
 open class TEST_TABLE(
-    @KdbColumnIndex @KdbColumnUnique var item_string: String = "",
+    @KdbColumnIndex @KdbColumnUnique
+    @KdbColumnSize(256)
+    var item_string: String = "",
+    @KdbColumnSize(10)
     @KdbColumnIndex var item_double: Double = 11.0,
+    @KdbColumnSize(10)
     @KdbColumnUnique var item_float: Float = 0F,
     var item_int: Int = 0,
     var item_long: Long = 0,
@@ -24,7 +28,8 @@ open class BindingTEST(var xyz: String = "")
 
 val kdb: Kdb by lazy {
     val sqlite = DbEngine.createSQLite(isDebug = true, "/tmp/test.sqlite")
-    Kdb.get(sqlite = sqlite,
+    Kdb.get(
+        sqlite = sqlite,
         reconfigureDatabaseOnStart = true,
         beforeInit = { println("-BEFORE INIT") },
         afterInit = { println("-AFTER INIT") },

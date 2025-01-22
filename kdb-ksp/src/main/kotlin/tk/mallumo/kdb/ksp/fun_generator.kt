@@ -40,7 +40,7 @@ fun generateDefStructure(
 
     map.forEach { entry ->
         val columns = entry.property.map {
-            "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.uppercase()}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex})"
+            "\t\t\t\tImplKdbTableDef.Item(name = \"${it.propertyName.uppercase()}\", type = ImplKdbTableDef.ColumnType.${it.sqlColumnTypeName}, defaultValue = ${it.defaultValue}, unique = ${it.isUnique}, index = ${it.isIndex}, size = ${it.columnSize})"
         }.joinToString(",\n", prefix = "mutableListOf(\n", postfix = ")")
 
         append(

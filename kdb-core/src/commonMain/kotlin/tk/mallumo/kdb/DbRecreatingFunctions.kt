@@ -6,10 +6,21 @@ import tk.mallumo.kdb.sqlite.*
 internal object DbRecreatingFunctions {
 
     private const val dbDefColumns =
-        "NAME_TABLE, NAME_COLUMN, TYPE, DEFAULT_VALUE, IS_UNIQUE, IS_INDEXED"
+        "NAME_TABLE, NAME_COLUMN, TYPE, DEFAULT_VALUE, IS_UNIQUE, IS_INDEXED, SIZE"
 
     private const val dbDefColumnsCreator =
-        "NAME_TABLE VARCHAR(128), NAME_COLUMN VARCHAR(128), TYPE VARCHAR(128), DEFAULT_VALUE VARCHAR(128), IS_UNIQUE INT, IS_INDEXED INT"
+        "NAME_TABLE VARCHAR(128), NAME_COLUMN VARCHAR(128), TYPE VARCHAR(128), DEFAULT_VALUE VARCHAR(128), IS_UNIQUE INT, IS_INDEXED INT, SIZE INT DEFAULT '0'"
+
+    private const val dbDefColumnsReplacement =
+        """
+            `NAME_TABLE`=VALUES(`NAME_TABLE`),
+            `NAME_COLUMN`=VALUES(`NAME_COLUMN`),
+            `TYPE`=VALUES(`TYPE`),
+            `DEFAULT_VALUE`=VALUES(`DEFAULT_VALUE`),
+            `IS_UNIQUE`=VALUES(`IS_UNIQUE`),
+            `IS_INDEXED`=VALUES(`IS_INDEXED`),
+            `SIZE`=VALUES(`SIZE`)
+        """
 
     private const val dbDefTable = "__DB_DEF"
 
@@ -52,7 +63,10 @@ internal object DbRecreatingFunctions {
                         if (it == null) {
                             alterColumn.add(newC)
                             writeChanges = true
-                        } else if (it.defaultValue != newC.defaultValue || it.type != newC.type) {
+                        } else if (it.defaultValue != newC.defaultValue
+                            || it.type != newC.type
+                            || it.size != newC.size
+                        ) {
                             redeclareTable = true
                         }
                     }
@@ -92,8 +106,13 @@ internal object DbRecreatingFunctions {
                     db.exec(newDef.redeclare3_Rename())
                 }
 
-                val newIndexes = newDef.getIndexes().joinToString { it.toString() }
-                val oldIndexes = oldDef.getIndexes().joinToString { it.toString() }
+                val newIndexes = newDef.getIndexes()
+                    .sortedBy { "${it.name},${it.type}" }
+                    .joinToString { it.toString() }
+
+                val oldIndexes = oldDef.getIndexes()
+                    .sortedBy { "${it.name},${it.type}" }
+                    .joinToString { it.toString() }
 
                 if (newIndexes != oldIndexes) {
                     writeChanges = true
@@ -128,8 +147,8 @@ internal object DbRecreatingFunctions {
         db.insert(
             """
             INSERT INTO $dbDefTable (${dbDefColumns})
-            VALUES (?,?,?,?,?,?)
-            ${if (db.isSqlite) "" else " ON DUPLICATE KEY UPDATE `NAME_TABLE`=VALUES(`NAME_TABLE`), `NAME_COLUMN`=VALUES(`NAME_COLUMN`)"}
+            VALUES (?,?,?,?,?,?,?)
+            ${if (db.isSqlite) "" else " ON DUPLICATE KEY UPDATE $dbDefColumnsReplacement"}
         """.trimIndent()
         ) {
             dbDefArray.forEach { def ->
@@ -140,6 +159,7 @@ internal object DbRecreatingFunctions {
                     it.string(3) { column.defaultValue }
                     it.int(4) { if (column.unique) 1 else 0 }
                     it.int(5) { if (column.index) 1 else 0 }
+                    it.int(6) { column.size }
                     it.add()
                 }
             }
@@ -149,7 +169,7 @@ internal object DbRecreatingFunctions {
             dbDefArray.map { table -> table.columns.map { column -> "'${table.name}-${column.name}'" } }
                 .joinToString(",") { it.joinToString(",") }
 
-        val concatWhere = if(db.isSqlite) " (NAME_TABLE || '-' || NAME_COLUMN) "
+        val concatWhere = if (db.isSqlite) " (NAME_TABLE || '-' || NAME_COLUMN) "
         else " CONCAT(NAME_TABLE, '-', NAME_COLUMN) "
 
         db.exec("DELETE FROM $dbDefTable WHERE $concatWhere NOT IN ($podm)")
@@ -157,7 +177,8 @@ internal object DbRecreatingFunctions {
 
     private suspend fun readOldDefDirect(db: DbEngine): List<ImplKdbTableDef>? = coroutineScope {
         val map = HashMap<String, ImplKdbTableDef>()
-        try {
+
+        fun readTableData() {
             db.query(
                 """
            SELECT $dbDefColumns
@@ -183,6 +204,9 @@ internal object DbRecreatingFunctions {
                         cursor.int(5) {
                             item.index = it == 1
                         }
+                        cursor.int(6) {
+                            item.size = it
+                        }
 
                         val table = map[tablename] ?: ImplKdbTableDef(tablename)
                         table.columns.add(item)
@@ -190,10 +214,17 @@ internal object DbRecreatingFunctions {
                     }
                 }
             }
-            map.values.toList()
-        } catch (e: Exception) {
-            null
         }
+
+        runCatching {
+            readTableData()
+        }.onFailure {
+            runCatching {
+                db.exec("ALTER TABLE $dbDefTable ADD COLUMN SIZE INT DEFAULT '0';")
+                readTableData()
+            }
+        }
+        map.values.toList().takeIf { it.isNotEmpty() }
     }
 
     private suspend fun readIndexes(db: DbEngine): MutableList<String> = coroutineScope {

@@ -6,29 +6,23 @@ class ImplKdbTableDef(
     val columns: MutableList<Item> = mutableListOf()
 ) {
 
-    @JvmInline
-    value class IndexedField(private val data: Pair<String, String>) {
-        val name get() = data.first
-        val type get() = data.second
-        override fun toString(): String {
-            return "$name :: $type"
-        }
-    }
+    data class IndexedField(val name: String, val type: String)
 
     fun getUnique(): List<String> = columns.filter { it.unique }.map { it.name }
 
-    fun getIndexes(): List<IndexedField> = columns.filter { it.index }.map { IndexedField(it.name to it.type) }
+    fun getIndexes(): List<IndexedField> = columns.filter { it.index }.map { IndexedField(it.name, it.type) }
 
     override fun toString(): String {
         return "$name;${columns.joinToString(";") { it.toString() }}"
     }
 
-    class Item(
+    data class Item(
         var name: String = "",
         var type: String = ColumnType.UNDEFINED,
         var defaultValue: String = "",
         var unique: Boolean = false,
-        var index: Boolean = false
+        var index: Boolean = false,
+        var size: Int = 0
     ) {
 
 
@@ -51,16 +45,28 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
         append("\n${name} ")
         when (type) {
             ImplKdbTableDef.ColumnType.TEXT -> {
-                if (isSqlite) append(type)
-                else append("TEXT")
+                if (size > 0) append("VARCHAR(${size})")
+                else {
+                    if (isSqlite) append(type)
+                    else append("TEXT")
+                }
             }
 
             ImplKdbTableDef.ColumnType.NUMERIC -> {
-                if (isSqlite) append(type)
-                else append("DECIMAL(20,10)")
+                when {
+                    isSqlite -> append(type)
+                    size > 0 -> append("DECIMAL($size,10)")
+                    else -> append("DECIMAL(20,10)")
+                }
             }
 
-            else -> append(type)
+            ImplKdbTableDef.ColumnType.INTEGER,
+            ImplKdbTableDef.ColumnType.BIGINT -> {
+                if (size > 0) append("$type(${size})")
+                else append(type)
+            }
+
+            ImplKdbTableDef.ColumnType.UNDEFINED -> error("WTF column of ${this@sqlCreator}")
         }
 
         if (defaultValue.isNotEmpty()) {
@@ -71,7 +77,7 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
 }
 
 fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean)
-    : List<String> {
+        : List<String> {
 
     val result = mutableListOf<String>()
     if (redeclareType) {
