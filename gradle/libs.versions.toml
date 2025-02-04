@@ -1,28 +1,20 @@
 [versions]
-kotlin_core = "2.0.21"
-kotlin_ksp = "2.0.21-1.0.26"
-kotlin_datetime = "0.6.1"
-kotlin_coroutines = "1.9.0"
+kotlin_core = "2.1.10"
+kotlin_ksp = "2.1.10-1.0.29"
+kotlin_coroutines = "1.10.1"
 android_agp = "8.2.2"
-#
-me_log = "2.0.21-1.1.0"
-me_utils = "2.0.21-1.1.0"
 #
 kdb_sqlite = "3.39.3.0"
 kdb_mysql = "8.0.33"
 kdb_mariadb = "3.4.1"
 #
-me_kdb_core = "2.0.21-1.0.26-1.5.1"
-me_kdb_ksp = "2.0.21-1.0.26-1.5.1"
+me_kdb_core = "2.1.10-1.0.29-1.6.0"
+me_kdb_ksp = "2.1.10-1.0.29-1.6.0"
 
 #
 android-minSdk = "21"
 android-targetSdk = "34"
 #
-gson = "2.11.0"
-#
-compose_core = "1.7.0"
-
 androidx_core = "1.13.1"
 #
 [libraries]
