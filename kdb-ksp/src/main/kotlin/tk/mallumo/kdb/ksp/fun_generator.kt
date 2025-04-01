@@ -24,7 +24,13 @@ fun Kdb.Companion.get(
                 afterDatabaseChange
             )
         }
-}   
+}
+
+internal suspend fun <T : Any> wrapCommand(q: String, body: suspend ()->T): T = runCatching {
+    body()
+}.onFailure {
+    throw Exception("${'$'}{it.message}:\n${'$'}q")
+}.getOrThrow()
 """
 
 fun generateDefStructure(
@@ -128,8 +134,7 @@ fun generateCursorFunctions(
             }
         }
         return out
-    }
-"""
+    }"""
         )
     }
 
@@ -226,9 +231,12 @@ fun generateExtCursorFunctions(
             """
 suspend fun ImplKdbCommand.Query.${entry.niceClassName}(query: String, params: Map<String, Any?> = mapOf()): MutableList<${entry.qualifiedName}> {
     var resp = mutableListOf<${entry.qualifiedName}>()
-    kdb.connection {
-        db.query(ImplKdbUtilsFunctions.mapQueryParams(query, params)) { cursor ->
-            resp = KdbGeneratedQuery.query_${entry.functionName}(cursor)
+    val q = ImplKdbUtilsFunctions.mapQueryParams(query, params)
+    wrapCommand(q){
+        kdb.connection {
+            db.query(q) { cursor ->
+                resp = KdbGeneratedQuery.query_${entry.functionName}(cursor)
+            }
         }
     }
     return resp
@@ -236,7 +244,7 @@ suspend fun ImplKdbCommand.Query.${entry.niceClassName}(query: String, params: M
 """
         )
     }
-}
+}.trim()
 
 fun generateExtDeleteFunctions(
     map: List<TableNode>
@@ -248,8 +256,10 @@ suspend fun ImplKdbCommand.Delete.${entry.niceClassName}(where: String = "1=1") 
     val command = "DELETE FROM ${
                 entry.simpleName
             } WHERE ${'$'}where"
-    kdb.connection {        
-        db.exec(command)
+    wrapCommand(command){
+        kdb.connection {        
+            db.exec(command)
+        }
     }
 }
 """
@@ -268,9 +278,12 @@ fun generateExtUpdateFunctions(
         append(
             """
 suspend fun ImplKdbCommand.Update.${entry.niceClassName}(where: String = "1=1", params: Map<String, Any?> = mapOf()) {
-    kdb.connection {
-        db.exec("$command")
-    }
+   val command = "$command"
+   wrapCommand(command){
+        kdb.connection {
+            db.exec(command)
+        }
+   }
 }
 """
         )
@@ -292,7 +305,9 @@ suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: List<${entry.qua
     ${entry.niceClassName}(items.toTypedArray())
 
 suspend fun ImplKdbCommand.Insert.${entry.niceClassName}(items: Array<${entry.qualifiedName}>): List<Long> = 
+  wrapCommand("INSERT INTO ${entry.simpleName} ... "){
     kdb.connection { KdbGeneratedInsert.insert_${entry.functionName}(items, db) }
+  }
 """
         )
     }
