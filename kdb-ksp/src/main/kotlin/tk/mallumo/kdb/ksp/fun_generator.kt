@@ -4,18 +4,18 @@ fun generateCreator() = """
 private val databases = hashMapOf<String,Kdb>()
  
 fun Kdb.Companion.get(
-    sqlite:tk.mallumo.kdb.sqlite.DbEngine,
+    engine:tk.mallumo.kdb.sqlite.DbEngine,
     reconfigureDatabaseOnStart:Boolean = true,
     beforeInit: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
     afterInit: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
     beforeDatabaseChange: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {},
     afterDatabaseChange: suspend tk.mallumo.kdb.sqlite.DbEngine.() -> Unit = {})
     :Kdb{
-        return databases.getOrPut(sqlite.path){
+        return databases.getOrPut(engine.path){
             @Suppress("DEPRECATION")
             Kdb.Companion.newInstance(
-                sqlite,
-                sqlite.isDebug,
+                engine,
+                engine.isDebug,
                 reconfigureDatabaseOnStart,
                 KdbGeneratedDefStructure.getTablesDef(),
                 beforeInit,
@@ -201,7 +201,7 @@ fun generateInsertFunctions(
 
         append(
             """
-    fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: DbEngine):List<Long>{
+    suspend fun insert_${entry.functionName}(items: Array<${entry.qualifiedName}>, db: DbEngine):List<Long>{
         var rowIds:List<Long> = emptyList()
         if (items.isEmpty()) return rowIds
     

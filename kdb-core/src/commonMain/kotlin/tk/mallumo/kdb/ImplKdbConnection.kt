@@ -8,21 +8,22 @@ class ImplKdbConnection internal constructor(
     private val debug: Boolean
 ) {
 
-    fun exec(sql: String) {
+    suspend fun exec(sql: String) {
         if (sql.isEmpty()) return
         execIUD(sql)
     }
 
-    fun call(sql: String, vararg args: KProperty0<*>) {
+    suspend fun call(sql: String, vararg args: KProperty0<*>) {
         if (sql.isEmpty()) return
         db.call(sql, *args)
     }
 
-    private fun execIUD(command: String) {
+    private suspend  fun execIUD(command: String) {
+        if (command.isEmpty()) return
         db.exec(command)
     }
 
-    protected fun finalize() {
+    protected suspend  fun finalize() {
         db.close()
     }
 }

@@ -7,17 +7,21 @@ import java.sql.*
 
 
 @Suppress("unused")
-actual open class DbInsertStatement actual constructor(val db: DbEngine, command: String) {
+actual open class DbInsertStatement actual constructor(val db: DbEngine) {
 
-    private val statement = db.getConnection().prepareStatement(command,  Statement.RETURN_GENERATED_KEYS)
+    private lateinit var  statement :PreparedStatement
     private var rows = 0
 
     private var rowAdded = false
+
     protected actual val ids: MutableList<Long> = mutableListOf()
 
-
-    actual open fun prepare() {
-        ids.clear()
+    actual open suspend fun run(command: String, body: DbInsertStatement.() -> Unit){
+        db.connection {
+            ids.clear()
+            statement = prepareStatement(command,  Statement.RETURN_GENERATED_KEYS)
+            body()
+        }
     }
 
     actual open fun string(index: Int, callback: () -> String) {
@@ -67,7 +71,7 @@ actual open class DbInsertStatement actual constructor(val db: DbEngine, command
         if (!rowAdded) add()
 
         statement.executeBatch()
-        db.getConnection().commit()
+        statement.connection.commit()
 
         val newIds = mutableListOf<Long>()
         statement.generatedKeys.also { rs ->

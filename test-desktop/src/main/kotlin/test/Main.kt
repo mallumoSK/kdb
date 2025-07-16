@@ -27,7 +27,10 @@ open class BindingTEST_TABLE(var x: Double = 1.3) : TEST_TABLE()
 open class BindingTEST(var xyz: String = "")
 
 val kdb: Kdb by lazy {
-    val sqlite = DbEngine.createSQLite(isDebug = true, "/tmp/test.sqlite")
+    val sqlite = DbEngine.createSQLite(
+        isDebug = true,
+        path = "/tmp/test.sqlite"
+    )
     Kdb.get(
         sqlite = sqlite,
         reconfigureDatabaseOnStart = true,

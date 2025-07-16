@@ -20,12 +20,12 @@ class Kdb internal constructor(
 
     companion object {
         @Deprecated(
-            message = "use Kdb.Companion.get(sqlite, beforeInit, reconfigureDatabaseOnStart, afterInit, beforeDatabaseChange, afterDatabaseChange)",
+            message = "use Kdb.Companion.get(engine, beforeInit, reconfigureDatabaseOnStart, afterInit, beforeDatabaseChange, afterDatabaseChange)",
             replaceWith = ReplaceWith("get"),
             level = DeprecationLevel.WARNING
         )
         fun newInstance(
-            sqlite: DbEngine,
+            engine: DbEngine,
             isDebug: Boolean,
             reconfigureDatabaseOnStart:Boolean = true,
             dbDefArray: MutableList<ImplKdbTableDef>,
@@ -34,7 +34,7 @@ class Kdb internal constructor(
             beforeDatabaseChange: suspend DbEngine.() -> Unit = {},
             afterDatabaseChange: suspend DbEngine.() -> Unit = {}
         ): Kdb = Kdb(
-            sqlite,
+            engine,
             dbDefArray,
             isDebug,
             reconfigureDatabaseOnStart,
@@ -43,10 +43,9 @@ class Kdb internal constructor(
             beforeDatabaseChange,
             afterDatabaseChange,
         )
-
-        internal val kdbLock = Mutex()
     }
 
+    private val kdbLock = Mutex()
     private lateinit var connection: ImplKdbConnection
     private var isInitComplete = false
 
@@ -74,7 +73,6 @@ class Kdb internal constructor(
     private suspend fun initDatabase() {
         if (isInitComplete) return
 
-        db.open()
         db.beforeInit()
         if(reconfigureDatabaseOnStart){
             DbRecreatingFunctions.rebuildDatabase(this, db, dbDefArray, isDebug)
@@ -84,11 +82,13 @@ class Kdb internal constructor(
         db.afterInit()
     }
 
-    suspend fun <T : Any> connection(conn: suspend ImplKdbConnection.() -> T): T = kdbLock.withLock {
-        if (!isInitComplete) {
-            initDatabase()
+    suspend fun <T : Any> connection(conn: suspend ImplKdbConnection.() -> T): T {
+        kdbLock.withLock {
+            if (!isInitComplete) {
+                initDatabase()
+            }
         }
-        conn.invoke(connection)
+        return conn.invoke(connection)
     }
 
     suspend fun exec(sql: String) {
@@ -100,11 +100,6 @@ class Kdb internal constructor(
     suspend fun call(sql: String, vararg args: KProperty0<*> = arrayOf()) {
         connection {
             call(sql, *args)
-        }
-    }
-    suspend fun reconnect(){
-        kdbLock.withLock {
-            db.reconnect()
         }
     }
 }

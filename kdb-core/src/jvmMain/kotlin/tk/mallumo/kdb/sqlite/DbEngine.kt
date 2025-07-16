@@ -1,32 +1,62 @@
 package tk.mallumo.kdb.sqlite
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import tk.mallumo.kdb.*
 import java.sql.*
 import java.util.*
 import kotlin.reflect.*
 
-
+/**
+ * if maxParallelConnections > 1, then requirements:
+ *
+ * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+ */
 @Suppress("unused", "UNUSED_PARAMETER")
 actual open class DbEngine(
     val isDebug: Boolean,
+    maxParallelConnections: Int,
     sqlite: Boolean,
     private val connectionCallback: () -> Connection
 ) {
 
     companion object {
-        fun createSQLite(isDebug: Boolean, path: String) = DbEngine(isDebug = isDebug, sqlite = true) {
+        fun createSQLite(isDebug: Boolean, path: String) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = 1,
+            sqlite = true
+        ) {
             DriverManager.getConnection("jdbc:sqlite:${path}").apply {
                 autoCommit = false
             }
         }
 
-        fun createMySql(isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(isDebug = isDebug, sqlite = false) {
+        /**
+         * if maxParallelConnections > 1, then requirements:
+         *
+         * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         */
+        fun createMySql( maxParallelConnections: Int = 1,isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = maxParallelConnections,
+            sqlite = false
+        ) {
             DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", name, pass).apply {
                 autoCommit = false
             }
         }
 
-        fun createMadiaDb(isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(isDebug = isDebug, sqlite = false) {
+        /**
+         * if maxParallelConnections > 1, then requirements:
+         *
+         * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         */
+        fun createMadiaDb( maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = maxParallelConnections,
+            sqlite = false
+        ) {
             DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", name, pass).apply {
                 autoCommit = false
             }
@@ -37,69 +67,137 @@ actual open class DbEngine(
             setProperty("password", pass)
         }
 
-        fun createMySql(isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(isDebug = isDebug, sqlite = false) {
+        /**
+         * if maxParallelConnections > 1, then requirements:
+         *
+         * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         */
+        fun createMySql( maxParallelConnections: Int = 1,isDebug: Boolean,  database: String, host: String, port: Int, properties: Properties) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = maxParallelConnections,
+            sqlite = false
+        ) {
             DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", properties).apply {
                 autoCommit = false
             }
         }
 
-        fun createMadiaDb(isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(isDebug = isDebug, sqlite = false) {
+        /**
+         * if maxParallelConnections > 1, then requirements:
+         *
+         * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         */
+        fun createMadiaDb( maxParallelConnections: Int = 1,isDebug: Boolean,  database: String, host: String, port: Int, properties: Properties) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = maxParallelConnections,
+            sqlite = false
+        ) {
             DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", properties).apply {
                 autoCommit = false
             }
         }
 
-        fun createFromUrl(isDebug: Boolean, url: String) = DbEngine(isDebug = isDebug, sqlite = false) {
+        /**
+         * if maxParallelConnections > 1, then requirements:
+         *
+         * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         */
+        fun createFromUrl( maxParallelConnections: Int = 1,isDebug: Boolean,  url: String) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = maxParallelConnections,
+            sqlite = false
+        ) {
             DriverManager.getConnection(url).apply {
                 autoCommit = false
             }
         }
     }
 
+    actual open val maxConnections: Int = maxParallelConnections
+
     actual open val path: String = ""
 
     actual open val isSqlite: Boolean = sqlite
 
-    private var conn: Connection? = null
+    private val connStackFree = mutableListOf<Connection>()
 
-    fun getConnection(): Connection {
-        while (conn?.isValid(5_000) != true) {
-            open()
-        }
-        return conn!!
-    }
+    private var connStackSize = 0
 
-    actual open fun open() {
-        conn = connectionCallback.invoke()
-    }
+    private val lock = Mutex()
 
-    actual open fun close() {
+    actual suspend fun connection(body: suspend Connection.() -> Unit) {
+        val connection = findConnection()
+
         runCatching {
-            conn?.close()
-            conn = null
+            body(connection)
+        }.onFailure {
+            connStackSize -= 1
+            connection.runCatching {
+                close()
+            }
+            throw it
+        }.onSuccess {
+            lock.withLock {
+                connStackFree += connection
+            }
+        }
+    }
+
+    private suspend fun findConnection(): Connection {
+        val result = lock.withLock {
+            val newConnectionRequired = connStackSize == 0
+                    || (connStackSize < maxConnections && connStackFree.isEmpty())
+
+            if (newConnectionRequired) {
+                connectionCallback.invoke().also {
+                    connStackSize += 1
+                }
+            } else if (connStackFree.isNotEmpty()) {
+                connStackFree.removeFirst().let {
+                    if (it.isValid(1000)) it
+                    else null
+                }
+            } else null
         }
 
+
+        return if (result == null) {
+            delay(50)
+            findConnection()
+        } else result
     }
 
-    actual open fun insert(command: String, body: (DbInsertStatement) -> Unit) {
-        if (isDebug) logger(command)
-        with(DbInsertStatement(this@DbEngine, command)) {
-            prepare()
-            body(this)
+
+    actual open suspend fun close() {
+        lock.withLock {
+            while (connStackFree.isNotEmpty()) {
+                connStackFree.removeFirst().runCatching {
+                    close()
+                }
+                connStackSize -= 1
+            }
+            connStackSize = 0
         }
     }
 
-    actual open fun exec(command: String) {
+    actual open suspend fun insert(command: String, body: (DbInsertStatement) -> Unit) {
         if (isDebug) logger(command)
-        getConnection().execSQL(command)
+        DbInsertStatement(this@DbEngine).run(command, body)
     }
 
-    actual open fun query(
+    actual open suspend fun exec(command: String) {
+        if (isDebug) logger(command)
+        connection {
+            execSQL(command)
+        }
+    }
+
+    actual open suspend fun query(
         query: String,
         callback: (cursor: Cursor) -> Unit
     ) {
         if (isDebug) logger(query)
-        getConnection().apply {
+        connection {
             Cursor(rawQuery(query, null)).also {
                 try {
                     callback.invoke(it)
@@ -111,77 +209,69 @@ actual open class DbEngine(
                     }
                 }
             }
-
         }
     }
 
-    actual open fun queryUnclosed(query: String): ((Cursor) -> Unit) {
-        if (isDebug) logger(query)
-        return { Cursor(getConnection().rawQuery(query, null)) }
-    }
-
-
-    actual open fun call(cmd: String, vararg args: KProperty0<*>) {
+    actual open suspend fun call(cmd: String, vararg args: KProperty0<*>) {
         if (isDebug) logger(cmd)
         val values = args.map { it.get() }
-        getConnection().prepareCall(cmd)?.also {call ->
-            if (args.isNotEmpty()) {
-                args.forEachIndexed { index, kProperty ->
-                    call.setupArgument(index+1, kProperty, values[index])
+        connection {
+            prepareCall(cmd)?.also { call ->
+                if (args.isNotEmpty()) {
+                    args.forEachIndexed { index, kProperty ->
+                        call.setupArgument(index + 1, kProperty, values[index])
+                    }
                 }
-            }
-            call.execute()
-            if (args.isNotEmpty()) {
-                args.forEachIndexed { index, kProperty ->
-                    call.readOutput(index+1, kProperty, values[index])
+                call.execute()
+                if (args.isNotEmpty()) {
+                    args.forEachIndexed { index, kProperty ->
+                        call.readOutput(index + 1, kProperty, values[index])
+                    }
                 }
+                call.close()
             }
-            call.close()
         }
     }
 
     @Suppress("UNCHECKED_CAST")
     private fun <T> CallableStatement.readOutput(index: Int, kProperty: KProperty0<T>, value: T) {
-        if(kProperty !is KMutableProperty0) return
-        when(value){
+        if (kProperty !is KMutableProperty0) return
+        when (value) {
             is Int -> kProperty.set(getInt(index) as T)
             is Long -> kProperty.set(getLong(index) as T)
-            is String ->kProperty.set(getString(index) as T)
-            is Boolean ->kProperty.set((getInt(index) == 1) as T)
+            is String -> kProperty.set(getString(index) as T)
+            is Boolean -> kProperty.set((getInt(index) == 1) as T)
             else -> error("undefined type")
         }
     }
 
     private fun <T> CallableStatement.setupArgument(index: Int, kProperty: KProperty0<T>, value: T) {
-        val isOutputParam =  kProperty is KMutableProperty0
-        when(value){
-            is Int ->{
-                if(isOutputParam) registerOutParameter(index, Types.INTEGER)
+        val isOutputParam = kProperty is KMutableProperty0
+        when (value) {
+            is Int -> {
+                if (isOutputParam) registerOutParameter(index, Types.INTEGER)
                 else this.setInt(index, value)
             }
-            is Long ->{
-                if(isOutputParam) registerOutParameter(index, Types.BIGINT)
+
+            is Long -> {
+                if (isOutputParam) registerOutParameter(index, Types.BIGINT)
                 else this.setLong(index, value)
             }
-            is String ->{
-                if(isOutputParam) registerOutParameter(index, Types.VARCHAR)
+
+            is String -> {
+                if (isOutputParam) registerOutParameter(index, Types.VARCHAR)
                 else this.setString(index, value)
             }
-            is Boolean ->{
-                if(isOutputParam) registerOutParameter(index, Types.INTEGER)
-                else this.setInt(index, if(value) 1 else 0)
+
+            is Boolean -> {
+                if (isOutputParam) registerOutParameter(index, Types.INTEGER)
+                else this.setInt(index, if (value) 1 else 0)
             }
+
             else -> error("undefined type")
         }
     }
-
-    actual open fun reconnect() {
-        close()
-        open()
-    }
 }
-
-
 
 @Suppress("UNUSED_PARAMETER")
 private fun Connection.rawQuery(query: String, nothing: Nothing?): ResultSet {

@@ -178,7 +178,7 @@ internal object DbRecreatingFunctions {
     private suspend fun readOldDefDirect(db: DbEngine): List<ImplKdbTableDef>? = coroutineScope {
         val map = HashMap<String, ImplKdbTableDef>()
 
-        fun readTableData() {
+       suspend  fun readTableData() {
             db.query(
                 """
            SELECT $dbDefColumns

@@ -2,11 +2,10 @@ package tk.mallumo.kdb.sqlite
 
 
 @Suppress("unused")
-expect open class DbInsertStatement(db: DbEngine, command: String) {
+expect open class DbInsertStatement(db: DbEngine) {
     protected val ids: MutableList<Long>
 
-    open fun prepare()
-
+    open suspend fun run(command: String, body: DbInsertStatement.() -> Unit)
     open fun string(index: Int, callback: () -> String)
     open fun int(index: Int, callback: () -> Int)
     open fun long(index: Int, callback: () -> Long)
