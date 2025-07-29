@@ -2,6 +2,13 @@
 
 package tk.mallumo.kdb.sqlite
 
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.format
+import kotlinx.datetime.toJavaLocalDate
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toJavaLocalTime
 import java.math.*
 import java.sql.*
 
@@ -9,17 +16,17 @@ import java.sql.*
 @Suppress("unused")
 actual open class DbInsertStatement actual constructor(val db: DbEngine) {
 
-    private lateinit var  statement :PreparedStatement
+    private lateinit var statement: PreparedStatement
     private var rows = 0
 
     private var rowAdded = false
 
     protected actual val ids: MutableList<Long> = mutableListOf()
 
-    actual open suspend fun run(command: String, body: DbInsertStatement.() -> Unit){
+    actual open suspend fun run(command: String, body: DbInsertStatement.() -> Unit) {
         db.connection {
             ids.clear()
-            statement = prepareStatement(command,  Statement.RETURN_GENERATED_KEYS)
+            statement = prepareStatement(command, Statement.RETURN_GENERATED_KEYS)
             body()
         }
     }
@@ -41,6 +48,33 @@ actual open class DbInsertStatement actual constructor(val db: DbEngine) {
 
     actual open fun double(index: Int, callback: () -> Double) {
         statement.setDouble(index + 1, callback.invoke().truncateDecimal(10))
+        rowAdded = false
+    }
+
+    actual open fun time(index: Int, callback: () -> LocalTime) {
+        if (db.isSqlite) {
+            statement.setString(index + 1, callback.invoke().format(LocalTime.Formats.ISO))
+        } else {
+            statement.setObject(index + 1, callback.invoke().toJavaLocalTime())
+        }
+        rowAdded = false
+    }
+
+    actual open fun date(index: Int, callback: () -> LocalDate) {
+        if (db.isSqlite) {
+            statement.setString(index + 1, callback.invoke().format(LocalDate.Formats.ISO))
+        } else {
+            statement.setObject(index + 1, callback.invoke().toJavaLocalDate())
+        }
+        rowAdded = false
+    }
+
+    actual open fun dateTime(index: Int, callback: () -> LocalDateTime) {
+        if (db.isSqlite) {
+            statement.setString(index + 1, callback.invoke().format(LocalDateTime.Formats.ISO))
+        } else {
+            statement.setObject(index + 1, callback.invoke().toJavaLocalDateTime())
+        }
         rowAdded = false
     }
 

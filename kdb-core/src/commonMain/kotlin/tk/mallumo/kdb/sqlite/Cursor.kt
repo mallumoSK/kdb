@@ -1,5 +1,9 @@
 package tk.mallumo.kdb.sqlite
 
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+
 @Suppress("unused")
 expect open class Cursor {
 
@@ -15,4 +19,8 @@ expect open class Cursor {
     open fun int(index: Int, callback: (Int) -> Unit)
     open fun long(index: Int, callback: (Long) -> Unit)
     open fun double(index: Int, callback: (Double) -> Unit)
+
+    open fun time(index: Int, callback: (LocalTime) -> Unit)
+    open fun date(index: Int, callback: (LocalDate) -> Unit)
+    open fun dateTime(index: Int, callback: (LocalDateTime) -> Unit)
 }

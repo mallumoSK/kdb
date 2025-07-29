@@ -37,7 +37,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMySql( maxParallelConnections: Int = 1,isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+        fun createMySql(maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -52,7 +52,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMadiaDb( maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+        fun createMadiaDb(maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -72,7 +72,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMySql( maxParallelConnections: Int = 1,isDebug: Boolean,  database: String, host: String, port: Int, properties: Properties) = DbEngine(
+        fun createMySql(maxParallelConnections: Int = 1, isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -87,7 +87,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMadiaDb( maxParallelConnections: Int = 1,isDebug: Boolean,  database: String, host: String, port: Int, properties: Properties) = DbEngine(
+        fun createMadiaDb(maxParallelConnections: Int = 1, isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -102,7 +102,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createFromUrl( maxParallelConnections: Int = 1,isDebug: Boolean,  url: String) = DbEngine(
+        fun createFromUrl(maxParallelConnections: Int = 1, isDebug: Boolean, url: String) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -198,7 +198,13 @@ actual open class DbEngine(
     ) {
         if (isDebug) logger(query)
         connection {
-            Cursor(rawQuery(query, null)).also {
+            Cursor(
+                query = rawQuery(
+                    query = query,
+                    nothing = null
+                ),
+                isSqlite = isSqlite
+            ).also {
                 try {
                     callback.invoke(it)
                 } catch (e: Exception) {

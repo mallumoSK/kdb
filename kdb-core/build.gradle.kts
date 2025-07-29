@@ -33,6 +33,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.kotlin.coroutines)
+            api(libs.kotlin.datetime)
         }
     }
 }

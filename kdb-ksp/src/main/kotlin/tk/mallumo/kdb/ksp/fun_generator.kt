@@ -97,7 +97,15 @@ fun generateFillFunctions(
                 "kotlin.Long" -> "\t\t\tif (indexArray[$index] != -1) cursor.long(indexArray[$index]) { ${property.propertyName} = it }"
                 "kotlin.Double" -> "\t\t\tif (indexArray[$index] != -1) cursor.double(indexArray[$index]) { ${property.propertyName} = it }"
                 "kotlin.Float" -> "\t\t\tif (indexArray[$index] != -1) cursor.double(indexArray[$index]) { ${property.propertyName} = it.toFloat() }"
-                else -> ""
+                "kotlinx.datetime.LocalTime",
+                "kotlin.datetime.LocalTime" -> "\t\t\tif (indexArray[$index] != -1) cursor.time(indexArray[$index]) { ${property.propertyName} = it }"
+
+                "kotlinx.datetime.LocalDate",
+                "kotlin.datetime.LocalDate" -> "\t\t\tif (indexArray[$index] != -1) cursor.date(indexArray[$index]) { ${property.propertyName} = it }"
+
+                "kotlinx.datetime.LocalDateTime",
+                "kotlin.datetime.LocalDateTime" -> "\t\t\tif (indexArray[$index] != -1) cursor.dateTime(indexArray[$index]) { ${property.propertyName} = it }"
+                else -> " /*unknown field type '${property.qualifiedName}' of property '${property.propertyName}'*/"
             }
         }.joinToString("\n")
 
@@ -168,7 +176,7 @@ fun generateInsertFunctions(
                     "\t\t\t\t\tit.${prop.cursorTypeName}($index) { item.${prop.propertyName}.toDouble() }"
                 }
 
-                PropertyTypeHolder.directTypes.none { it == prop.qualifiedName } -> {
+                PropertyTypeHolder.typeToSqlTypeMap.keys.none { it == prop.qualifiedName } -> {
                     "\t\t\t\t\tit.${prop.cursorTypeName}($index) { item.${prop.propertyName}.toString() }"
                 }
 

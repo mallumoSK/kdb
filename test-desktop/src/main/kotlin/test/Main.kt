@@ -2,6 +2,9 @@ package test
 
 
 import kotlinx.coroutines.*
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
 import tk.mallumo.kdb.*
 import tk.mallumo.kdb.sqlite.*
 import java.sql.*
@@ -17,7 +20,11 @@ open class TEST_TABLE(
     @KdbColumnUnique var item_float: Float = 0F,
     var item_int: Int = 0,
     var item_long: Long = 0,
-    var a: String = ""
+    var a: String = "",
+
+    var item_time: LocalTime = LocalTime(1,2,3, 4),
+    var item_date: LocalDate = LocalDate(5,6,7),
+    var item_datetime: LocalDateTime = LocalDateTime(item_date, item_time),
 )
 
 @KdbQI
@@ -29,10 +36,10 @@ open class BindingTEST(var xyz: String = "")
 val kdb: Kdb by lazy {
     val sqlite = DbEngine.createSQLite(
         isDebug = true,
-        path = "/tmp/test.sqlite"
+        path = "/tmp/___/test.sqlite"
     )
     Kdb.get(
-        sqlite = sqlite,
+        engine = sqlite,
         reconfigureDatabaseOnStart = true,
         beforeInit = { println("-BEFORE INIT") },
         afterInit = { println("-AFTER INIT") },
@@ -43,6 +50,9 @@ val kdb: Kdb by lazy {
 
 fun main(args: Array<String>) {
     runBlocking {
+        kdb.prepareDatabase()
+
+
         var ids: List<Long> = emptyList()
         ids = kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
         println("tt 1 $ids")

@@ -2,12 +2,18 @@
 
 package tk.mallumo.kdb.sqlite
 
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalTime
+import kotlinx.datetime.toKotlinLocalDate
+import kotlinx.datetime.toKotlinLocalDateTime
+import kotlinx.datetime.toKotlinLocalTime
 import java.io.*
 import java.sql.*
 import java.util.*
 
 @Suppress("unused")
-actual open class Cursor(val query: ResultSet) : Closeable {
+actual open class Cursor(val query: ResultSet, val isSqlite: Boolean) : Closeable {
 
     private val columnsCount = query.metaData.columnCount
 
@@ -70,6 +76,48 @@ actual open class Cursor(val query: ResultSet) : Closeable {
         runCatching {
             query.getDouble(index + 1).also {
                 callback.invoke(it)
+            }
+        }.onFailure { it.printStackTrace() }
+    }
+
+    actual open fun time(index: Int, callback: (LocalTime) -> Unit) {
+        runCatching {
+            if (isSqlite) {
+                query.getString(index + 1).also {
+                    callback(LocalTime.parse(it, LocalTime.Formats.ISO))
+                }
+            } else {
+                query.getTime(index + 1).also {
+                    callback(it.toLocalTime().toKotlinLocalTime())
+                }
+            }
+        }.onFailure { it.printStackTrace() }
+    }
+
+    actual open fun date(index: Int, callback: (LocalDate) -> Unit) {
+        runCatching {
+            if (isSqlite) {
+                query.getString(index + 1).also {
+                    callback(LocalDate.parse(it, LocalDate.Formats.ISO))
+                }
+            } else {
+                query.getDate(index + 1).also {
+                    callback(it.toLocalDate().toKotlinLocalDate())
+                }
+            }
+        }.onFailure { it.printStackTrace() }
+    }
+
+    actual open fun dateTime(index: Int, callback: (LocalDateTime) -> Unit) {
+        runCatching {
+            if (isSqlite) {
+                query.getString(index + 1).also {
+                    callback(LocalDateTime.parse(it, LocalDateTime.Formats.ISO))
+                }
+            } else {
+                query.getObject(index + 1, java.time.LocalDateTime::class.java).also {
+                    callback(it.toKotlinLocalDateTime())
+                }
             }
         }.onFailure { it.printStackTrace() }
     }

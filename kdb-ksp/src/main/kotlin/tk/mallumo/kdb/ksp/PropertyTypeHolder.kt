@@ -18,7 +18,7 @@ data class PropertyTypeHolder(
     val defaultValue: String,
     val isUnique: Boolean,
     val isIndex: Boolean,
-    val columnSize:Int
+    val columnSize: Int
 ) {
 
 
@@ -26,12 +26,21 @@ data class PropertyTypeHolder(
         /**
          * object types which Bundle supports directly
          */
-        val directTypes = arrayOf(
-            "kotlin.Double",
-            "kotlin.Float",
-            "kotlin.Int",
-            "kotlin.Long",
-            "kotlin.String"
+         val typeToSqlTypeMap = mapOf(
+            "kotlin.Double" to "NUMERIC",
+            "kotlin.Float" to "NUMERIC",
+            "kotlin.Int" to "INTEGER",
+            "kotlin.Long" to "BIGINT",
+            "kotlin.String" to "TEXT",
+
+            "kotlinx.datetime.LocalTime" to "TIME",
+            "kotlin.datetime.LocalTime" to "TIME",
+
+            "kotlinx.datetime.LocalDate" to "DATE",
+            "kotlin.datetime.LocalDate" to "DATE",
+
+            "kotlinx.datetime.LocalDateTime" to "DATETIME",
+            "kotlinx.datetime.LocalDateTime" to "DATETIME"
         )
 
         /**
@@ -43,24 +52,26 @@ data class PropertyTypeHolder(
             val name = prop.simpleName.asString()
             val declaration = prop.type.resolve().declaration
             val typeName = declaration.qualifiedName?.asString() ?: return null
-            val cursorTypeName = typeName
-                .split(".")[1]
-                .lowercase(Locale.ENGLISH)
-                .let {
-                    if (it != "float") it
-                    else "double"
-                }
-            val sqlColumnTypeName = when (typeName) {
-                "kotlin.Double" -> "NUMERIC"
-                "kotlin.Float" -> "NUMERIC"
-                "kotlin.Int" -> "INTEGER"
-                "kotlin.Long" -> "BIGINT"
-                "kotlin.String" -> "TEXT"
-                else -> "UNDEFINED"
+
+            val sqlColumnTypeName = typeToSqlTypeMap[typeName] ?: "UNDEFINED"
+
+            val simpleTypeName = declaration.simpleName.asString()
+
+            val cursorTypeName = when (simpleTypeName) {
+                "Float" -> "double" // Cursors use 'double' for floats.
+                "LocalTime" -> "time"
+                "LocalDate" -> "date"
+                "LocalDateTime" -> "dateTime"
+                else -> simpleTypeName.lowercase()
             }
-            val defaultValue =
-                if (sqlColumnTypeName == "TEXT") "\"'${'$'}{instance.$name}'\""
-                else "instance.${name}.toString()"
+
+            val defaultValue = when (sqlColumnTypeName) {
+                "TEXT",
+                "TIME",
+                "DATE",
+                "DATETIME" ->"\"'${'$'}{instance.$name}'\""
+                else -> "instance.${name}.toString()"
+            }
 
             val isUnique = prop.annotations.any { it.shortName.asString() == "KdbColumnUnique" }
             val isIndex = prop.annotations.any { it.shortName.asString() == "KdbColumnIndex" }
@@ -71,9 +82,10 @@ data class PropertyTypeHolder(
                 ?.value
                 ?.toString()
                 ?.toIntOrNull()
-                ?:0
+                ?: 0
+
             return when (typeName) {
-                in directTypes -> {
+                in typeToSqlTypeMap.keys -> {
                     PropertyTypeHolder(
                         name,
                         typeName,
@@ -85,6 +97,7 @@ data class PropertyTypeHolder(
                         columnSize
                     )
                 }
+
                 else -> null
             }
         }

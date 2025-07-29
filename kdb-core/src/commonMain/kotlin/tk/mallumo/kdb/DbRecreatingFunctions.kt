@@ -155,7 +155,7 @@ internal object DbRecreatingFunctions {
                 def.columns.forEach { column ->
                     it.string(0) { def.name }
                     it.string(1) { column.name }
-                    it.string(2) { column.type }
+                    it.string(2) { column.type.toString() }
                     it.string(3) { column.defaultValue }
                     it.int(4) { if (column.unique) 1 else 0 }
                     it.int(5) { if (column.index) 1 else 0 }
@@ -193,7 +193,7 @@ internal object DbRecreatingFunctions {
                             item.name = it
                         }
                         cursor.string(2) {
-                            item.type = it
+                            item.type = ImplKdbTableDef.ColumnType[it]
                         }
                         cursor.string(3) {
                             item.defaultValue = it
