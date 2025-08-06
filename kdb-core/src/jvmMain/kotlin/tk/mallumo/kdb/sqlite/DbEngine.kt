@@ -191,6 +191,15 @@ actual open class DbEngine(
             execSQL(command)
         }
     }
+    actual open suspend fun exec(commands: List<String>) {
+        if (isDebug) {
+            logger("commands: ${commands.size}x")
+            commands.forEach(::println)
+        }
+        connection {
+            execSQL(commands)
+        }
+    }
 
     actual open suspend fun query(
         query: String,
@@ -285,9 +294,20 @@ private fun Connection.rawQuery(query: String, nothing: Nothing?): ResultSet {
 }
 
 private fun Connection.execSQL(command: String) {
-    createStatement().also {
+    createStatement().use {
         it.execute(command)
-        it.close()
     }
     commit()
+}
+
+private fun Connection.execSQL(commands: List<String>) {
+    if(commands.isNotEmpty()){
+        createStatement().use { statement ->
+            commands.forEach { cmd ->
+                statement.addBatch(cmd.trim())
+            }
+            statement.executeBatch()
+        }
+        commit()
+    }
 }

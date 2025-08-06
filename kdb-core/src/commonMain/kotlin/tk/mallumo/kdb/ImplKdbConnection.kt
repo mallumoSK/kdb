@@ -13,6 +13,12 @@ class ImplKdbConnection internal constructor(
         execIUD(sql)
     }
 
+    suspend fun exec(commands: List<String>) {
+        if (commands.isEmpty()) return
+        if(commands.any { it.trim().isEmpty() }) error("empty command")
+        db.exec(commands)
+    }
+
     suspend fun call(sql: String, vararg args: KProperty0<*>) {
         if (sql.isEmpty()) return
         db.call(sql, *args)

@@ -11,7 +11,7 @@ class Kdb internal constructor(
     private val db: DbEngine,
     private val dbDefArray: MutableList<ImplKdbTableDef>,
     private val isDebug: Boolean,
-    private val reconfigureDatabaseOnStart:Boolean = true,
+    private val reconfigureDatabaseOnStart: Boolean = true,
     internal val beforeInit: suspend DbEngine.() -> Unit = {},
     internal val afterInit: suspend DbEngine.() -> Unit = {},
     internal val beforeDatabaseChange: suspend DbEngine.() -> Unit = {},
@@ -27,7 +27,7 @@ class Kdb internal constructor(
         fun newInstance(
             engine: DbEngine,
             isDebug: Boolean,
-            reconfigureDatabaseOnStart:Boolean = true,
+            reconfigureDatabaseOnStart: Boolean = true,
             dbDefArray: MutableList<ImplKdbTableDef>,
             beforeInit: suspend DbEngine.() -> Unit = {},
             afterInit: suspend DbEngine.() -> Unit = {},
@@ -74,7 +74,7 @@ class Kdb internal constructor(
         if (isInitComplete) return
 
         db.beforeInit()
-        if(reconfigureDatabaseOnStart){
+        if (reconfigureDatabaseOnStart) {
             DbRecreatingFunctions.rebuildDatabase(this, db, dbDefArray, isDebug)
         }
         connection = ImplKdbConnection(db, isDebug)
@@ -91,15 +91,15 @@ class Kdb internal constructor(
         return conn.invoke(connection)
     }
 
-    suspend fun exec(sql: String) {
-        connection {
-            exec(sql)
-        }
+    suspend fun exec(sql: String): Unit = connection {
+        this.exec(sql)
     }
 
-    suspend fun call(sql: String, vararg args: KProperty0<*> = arrayOf()) {
-        connection {
-            call(sql, *args)
-        }
+    suspend fun exec(commands: List<String>): Unit = connection {
+        this.exec(commands)
+    }
+
+    suspend fun call(sql: String, vararg args: KProperty0<*> = arrayOf()): Unit = connection {
+        this.call(sql, *args)
     }
 }
