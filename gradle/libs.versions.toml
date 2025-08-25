@@ -2,7 +2,7 @@
 kotlin_core = "2.2.10"
 kotlin_ksp = "2.2.10-2.0.2"
 kotlin_datetime = "0.7.1"
-kotlin_coroutines = "1.10.2"
+kotlin_coroutines = "1.10.1"
 android_agp = "8.2.2"
 #
 kdb_sqlite = "3.39.3.0"
