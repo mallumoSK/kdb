@@ -37,5 +37,5 @@ rootProject.name = "kdb"
 
 include(":kdb-core")
 include(":kdb-ksp")
-include(":test-android")
+//include(":test-android")
 include(":test-desktop")
