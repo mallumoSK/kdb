@@ -56,6 +56,15 @@ actual open class Cursor(val query: ResultSet, val isSqlite: Boolean) : Closeabl
         }.onFailure { it.printStackTrace() }
     }
 
+    actual open fun stringClob(index: Int, callback: (String) -> Unit) {
+        runCatching {
+            query.getClob(index + 1)?.also {
+                callback.invoke(it.characterStream.use { it.readText() })
+                it.free()
+            }
+        }.onFailure { it.printStackTrace() }
+    }
+
     actual open fun int(index: Int, callback: (Int) -> Unit) {
         runCatching {
             query.getInt(index + 1).also {
