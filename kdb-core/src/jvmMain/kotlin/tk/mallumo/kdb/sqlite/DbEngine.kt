@@ -52,7 +52,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMadiaDb(maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+        fun createMariaDb(maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -87,7 +87,7 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMadiaDb(maxParallelConnections: Int = 1, isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(
+        fun createMariaDb(maxParallelConnections: Int = 1, isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -101,13 +101,45 @@ actual open class DbEngine(
          * if maxParallelConnections > 1, then requirements:
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         * ```
+         * lxc config device add [CONTAINER_NAME] sql-proxy proxy \
+         *     listen=tcp:127.0.0.1:3306 \
+         *     connect=unix:/var/run/mysqld/mysqld.sock \
+         *     bind=host
+         * ```
+         * ```
+         * implementation("org.mariadb.jdbc:mariadb-java-client:3.4.1")
+         * // JNA (Required for Unix Domain Socket support)
+         * implementation("net.java.dev.jna:jna:5.14.0")
+         * implementation("net.java.dev.jna:jna-platform:5.14.0")
+         * ```
          */
-        fun createFromUrl(maxParallelConnections: Int = 1, isDebug: Boolean, url: String) = DbEngine(
+        fun createMariaDbSocket(maxParallelConnections: Int = 1,
+                                isDebug: Boolean,
+                                database: String,
+                                properties: Properties,
+                                socket: String ="/var/run/mysqld/mysqld.sock") = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
         ) {
-            DriverManager.getConnection(url).apply {
+//
+            DriverManager.getConnection("jdbc:mariadb://localhost/$database?localSocket=$socket", properties).apply {
+                autoCommit = false
+            }
+        }
+
+        /**
+         * if maxParallelConnections > 1, then requirements:
+         *
+         * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
+         */
+        fun createFromUrl(maxParallelConnections: Int = 1, isDebug: Boolean, url: String, properties: Properties = Properties()) = DbEngine(
+            isDebug = isDebug,
+            maxParallelConnections = maxParallelConnections,
+            sqlite = false
+        ) {
+            DriverManager.getConnection(url, properties).apply {
                 autoCommit = false
             }
         }

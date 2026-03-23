@@ -9,8 +9,8 @@ kdb_sqlite = "3.39.3.0"
 kdb_mysql = "8.0.33"
 kdb_mariadb = "3.5.7"
 #
-me_kdb_core = "2.3.6-2.3.10-1.5.0"
-me_kdb_ksp = "2.3.6-2.3.10-1.5.0"
+me_kdb_core = "2.3.6-2.3.10-1.5.1"
+me_kdb_ksp = "2.3.6-2.3.10-1.5.1"
 
 #
 android-minSdk = "21"
