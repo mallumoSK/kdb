@@ -9,7 +9,7 @@ kdb_sqlite = "3.39.3.0"
 kdb_mysql = "8.0.33"
 kdb_mariadb = "3.4.1"
 #
-me_kdb_core = "2.2.10-2.0.2-1.4.0"
+me_kdb_core = "2.2.10-2.0.2-1.4.1"
 me_kdb_ksp = "2.2.10-2.0.2-1.4.0"
 
 #
