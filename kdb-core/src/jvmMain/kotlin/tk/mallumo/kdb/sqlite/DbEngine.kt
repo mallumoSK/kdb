@@ -37,14 +37,23 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMySql(maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+        fun createMySql(
+            maxParallelConnections: Int = 1,
+            isDebug: Boolean,
+            name: String,
+            pass: String,
+            database: String,
+            host: String,
+            port: Int
+        ) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
         ) {
-            DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", name, pass).apply {
-                autoCommit = false
-            }
+            DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", name, pass)
+                .apply {
+                    autoCommit = false
+                }
         }
 
         /**
@@ -52,14 +61,23 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMariaDb(maxParallelConnections: Int = 1, isDebug: Boolean, name: String, pass: String, database: String, host: String, port: Int) = DbEngine(
+        fun createMariaDb(
+            maxParallelConnections: Int = 1,
+            isDebug: Boolean,
+            name: String,
+            pass: String,
+            database: String,
+            host: String,
+            port: Int
+        ) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
         ) {
-            DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", name, pass).apply {
-                autoCommit = false
-            }
+            DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", name, pass)
+                .apply {
+                    autoCommit = false
+                }
         }
 
         fun createProperties(name: String, pass: String): Properties = Properties().apply {
@@ -72,14 +90,22 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMySql(maxParallelConnections: Int = 1, isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(
+        fun createMySql(
+            maxParallelConnections: Int = 1,
+            isDebug: Boolean,
+            database: String,
+            host: String,
+            port: Int,
+            properties: Properties
+        ) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
         ) {
-            DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", properties).apply {
-                autoCommit = false
-            }
+            DriverManager.getConnection("jdbc:mysql://${host}:$port/${database}", properties)
+                .apply {
+                    autoCommit = false
+                }
         }
 
         /**
@@ -87,14 +113,22 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createMariaDb(maxParallelConnections: Int = 1, isDebug: Boolean, database: String, host: String, port: Int, properties: Properties) = DbEngine(
+        fun createMariaDb(
+            maxParallelConnections: Int = 1,
+            isDebug: Boolean,
+            database: String,
+            host: String,
+            port: Int,
+            properties: Properties
+        ) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
         ) {
-            DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", properties).apply {
-                autoCommit = false
-            }
+            DriverManager.getConnection("jdbc:mariadb://${host}:$port/${database}", properties)
+                .apply {
+                    autoCommit = false
+                }
         }
 
         /**
@@ -114,17 +148,22 @@ actual open class DbEngine(
          * implementation("net.java.dev.jna:jna-platform:5.14.0")
          * ```
          */
-        fun createMariaDbSocket(maxParallelConnections: Int = 1,
-                                isDebug: Boolean,
-                                database: String,
-                                properties: Properties,
-                                socket: String ="/var/run/mysqld/mysqld.sock") = DbEngine(
+        fun createMariaDbSocket(
+            maxParallelConnections: Int = 1,
+            isDebug: Boolean,
+            database: String,
+            properties: Properties,
+            socket: String = "/var/run/mysqld/mysqld.sock"
+        ) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
         ) {
 //
-            DriverManager.getConnection("jdbc:mariadb://localhost/$database?localSocket=$socket", properties).apply {
+            DriverManager.getConnection(
+                "jdbc:mariadb://localhost/$database?localSocket=$socket",
+                properties
+            ).apply {
                 autoCommit = false
             }
         }
@@ -134,7 +173,12 @@ actual open class DbEngine(
          *
          * ``SET GLOBAL TRANSACTION ISOLATION LEVEL READ COMMITTED;``
          */
-        fun createFromUrl(maxParallelConnections: Int = 1, isDebug: Boolean, url: String, properties: Properties = Properties()) = DbEngine(
+        fun createFromUrl(
+            maxParallelConnections: Int = 1,
+            isDebug: Boolean,
+            url: String,
+            properties: Properties = Properties()
+        ) = DbEngine(
             isDebug = isDebug,
             maxParallelConnections = maxParallelConnections,
             sqlite = false
@@ -157,11 +201,11 @@ actual open class DbEngine(
 
     private val lock = Mutex()
 
-    actual suspend fun connection(body: suspend Connection.() -> Unit) {
+    actual suspend fun connection(body: suspend DatabaseConnector.() -> Unit) {
         val connection = findConnection()
 
         runCatching {
-            body(connection)
+            body(connection as DatabaseConnector)
         }.onFailure {
             connStackSize -= 1
             connection.runCatching {
@@ -223,6 +267,7 @@ actual open class DbEngine(
             execSQL(command)
         }
     }
+
     actual open suspend fun exec(commands: List<String>) {
         if (isDebug) {
             logger("commands: ${commands.size}x")
@@ -292,7 +337,11 @@ actual open class DbEngine(
         }
     }
 
-    private fun <T> CallableStatement.setupArgument(index: Int, kProperty: KProperty0<T>, value: T) {
+    private fun <T> CallableStatement.setupArgument(
+        index: Int,
+        kProperty: KProperty0<T>,
+        value: T
+    ) {
         val isOutputParam = kProperty is KMutableProperty0
         when (value) {
             is Int -> {
@@ -321,19 +370,19 @@ actual open class DbEngine(
 }
 
 @Suppress("UNUSED_PARAMETER")
-private fun Connection.rawQuery(query: String, nothing: Nothing?): ResultSet {
+private fun DatabaseConnector.rawQuery(query: String, nothing: Nothing?): ResultSet {
     return createStatement().executeQuery(query)
 }
 
-private fun Connection.execSQL(command: String) {
+private fun DatabaseConnector.execSQL(command: String) {
     createStatement().use {
         it.execute(command)
     }
     commit()
 }
 
-private fun Connection.execSQL(commands: List<String>) {
-    if(commands.isNotEmpty()){
+private fun DatabaseConnector.execSQL(commands: List<String>) {
+    if (commands.isNotEmpty()) {
         createStatement().use { statement ->
             commands.forEach { cmd ->
                 statement.addBatch(cmd.trim())

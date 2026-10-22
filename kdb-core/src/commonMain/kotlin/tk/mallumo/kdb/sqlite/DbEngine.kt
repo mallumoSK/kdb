@@ -16,5 +16,5 @@ expect open class DbEngine {
     open suspend fun exec(commands: List<String>)
     open suspend fun query(query: String, callback: (cursor: Cursor) -> Unit)
     open suspend fun call(cmd: String, vararg args: KProperty0<*>)
-    suspend fun connection(body: suspend Connection.() -> Unit)
+    suspend fun connection(body: suspend DatabaseConnector.() -> Unit)
 }

@@ -2,20 +2,23 @@
 
 ## KDB-CORE: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmallumo%2Fpublic%2Ftk%2Fmallumo%2Fkdb-core%2Fmaven-metadata.xml)
 
-
 ## KDB-KSP: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmallumo%2Fpublic%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml)
 
-
+```bash
+clear && _COMMIT/commit-llama.sh  "$(pwd)"
+```
 
 * sqlite wrapper for desktop and android
 * **Main GOALS**
-  * faster compilation time
-  * faster runtime
-  * simply to use
-  * **automatic database changes** based on class annotations, except rename column -> **NEVER DO THAT**
-  * use/write complex query (in runtime or remote delivery)
+    * faster compilation time
+    * faster runtime
+    * simply to use
+    * **automatic database changes** based on class annotations, except rename column -> **NEVER DO
+      THAT**
+    * use/write complex query (in runtime or remote delivery)
 
 ## About
+
 * no reflection
 * no kapt
 * can be used for android and jvm-desktop
@@ -23,13 +26,15 @@
 * automatic generating suspend extension function of (query, insert, update, delete)
 * all tasks are synchronized by ``kotlinx.coroutines.sync.Mutex``
 * connector for
-  * SqLite ``tk.mallumo.kdb.sqlite.DbEngine.createSQLite``,
-  * MySql ``tk.mallumo.kdb.sqlite.DbEngine.createMySql``,
-* you can use yours own jdbc implementations for other database engines, by custom implementation of ``tk.mallumo.kdb.sqlite.DbEngine``, ``tk.mallumo.kdb.sqlite.Cursor``, ``tk.mallumo.kdb.sqlite.DbInsertStatement`` 
-  * mysql
-  * oracle
-  * ...
-  
+    * SqLite ``tk.mallumo.kdb.sqlite.DbEngine.createSQLite``,
+    * MySql ``tk.mallumo.kdb.sqlite.DbEngine.createMySql``,
+* you can use yours own jdbc implementations for other database engines, by custom implementation of
+  ``tk.mallumo.kdb.sqlite.DbEngine``, ``tk.mallumo.kdb.sqlite.Cursor``,
+  ``tk.mallumo.kdb.sqlite.DbInsertStatement``
+    * mysql
+    * oracle
+    * ...
+
 * **automatic database changes without programmer interaction:**
     * add table
     * add/remove column
@@ -42,6 +47,7 @@
             * ksp.arg("commonSourcesOnly" , "true")
 
 ## Rules
+
 * table objects must have empty constructor
 * fields of table objects must have default values
 * fields of table must be **NOT** nullable
@@ -50,6 +56,7 @@
 ## Example
 
 ### TABLE CLASS
+
 ```kotlin
 import tk.mallumo.kdb.KdbTable
 import tk.mallumo.kdb.KdbColumnUnique
@@ -66,6 +73,7 @@ open class TEST_TABLE(
 ```
 
 ### Objects just for custom query
+
 ```kotlin
 import tk.mallumo.kdb.KdbQI
 
@@ -77,6 +85,7 @@ open class BindingTEST(var xyz: String = "")
 ```
 
 ### Instance of database
+
 ```kotlin
 import tk.mallumo.kdb
 
@@ -95,6 +104,7 @@ val kdb: Kdb by lazy {
 ```
 
 ### Insert, Query, Delete, Update
+
 ```kotlin
 // insert
 kdb.insert.test_table(TEST_TABLE(item_string = "a", item_float = 1F))
@@ -131,6 +141,7 @@ plugins {
     id("com.google.devtools.ksp") version "1.8.20-1.0.11"
 }
 ```
+
 ```groovy
 // ANDROID
 android {
@@ -167,6 +178,7 @@ repositories {
 ```
 
 2. add pluginManagement **On top** of file **settings.gradle** :
+
 ```groovy
 pluginManagement {
   repositories {
@@ -176,6 +188,7 @@ pluginManagement {
 ```
 
 3. add first table-class qith annotation of ``@KdbTable``
+
 ```kotlin
 @KdbTable
 class TEST_TABLE(
@@ -183,8 +196,10 @@ class TEST_TABLE(
 )
 ```
 
-4. build application or run gradle task whitch starts with **ksp** etc. ``kspKotlin``, ``kspDebugKotlin``, ...  
-4.1 all functions (instance of database, insert, update, delete, query ) will be generated automatically
+4. build application or run gradle task whitch starts with **ksp** etc. ``kspKotlin``,
+   ``kspDebugKotlin``, ...  
+   4.1 all functions (instance of database, insert, update, delete, query ) will be generated
+   automatically
 
- 
+
 5. JOB DONE :)

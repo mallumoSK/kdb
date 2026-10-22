@@ -3,7 +3,10 @@ kotlin_core = "2.3.10"
 kotlin_ksp = "2.3.6"
 kotlin_datetime = "0.7.1"
 kotlin_coroutines = "1.10.2"
-android_agp = "8.2.2"
+android_agp = "9.1.0"
+android_sdk_compile = "36"
+android_sdk_min = "26"
+android_sqlite = "2.6.2"
 #
 kdb_sqlite = "3.39.3.0"
 kdb_mysql = "8.0.33"
@@ -32,6 +35,7 @@ androidx_core = { module = "androidx.core:core-ktx", version.ref = "androidx_cor
 kotlin-ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "kotlin_ksp" }
 kotlin-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlin_coroutines" }
 kotlin-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin_datetime" }
+sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "android_sqlite" }
 #
 [bundles]
 
@@ -41,9 +45,10 @@ me-kdb-mariadb = ["me-kdb-core", "kdb-mariadb"]
 me-kdb-sqlite = ["me-kdb-core", "kdb-sqlite"]
 
 [plugins]
-android-lib = { id = "com.android.library", version.ref = "android_agp" }
-android-app = { id = "com.android.application", version.ref = "android_agp" }
 kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "kotlin_ksp" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin_core" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin_core" }
+android-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "android_agp" }
+android-application = { id = "com.android.application", version.ref = "android_agp" }
+
 
