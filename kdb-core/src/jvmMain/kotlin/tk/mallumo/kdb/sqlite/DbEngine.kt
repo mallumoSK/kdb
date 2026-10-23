@@ -205,7 +205,7 @@ actual open class DbEngine(
         val connection = findConnection()
 
         runCatching {
-            body(connection as DatabaseConnector)
+            body(connection)
         }.onFailure {
             connStackSize -= 1
             connection.runCatching {

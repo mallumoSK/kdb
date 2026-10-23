@@ -9,6 +9,7 @@ import kotlinx.datetime.format
 import kotlinx.datetime.toJavaLocalDate
 import kotlinx.datetime.toJavaLocalDateTime
 import kotlinx.datetime.toJavaLocalTime
+import tk.mallumo.kdb.toByteArray
 import java.math.*
 import java.sql.*
 
@@ -48,6 +49,11 @@ actual open class DbInsertStatement actual constructor(val db: DbEngine) {
 
     actual open fun double(index: Int, callback: () -> Double) {
         statement.setDouble(index + 1, callback.invoke().truncateDecimal(10))
+        rowAdded = false
+    }
+
+    actual open fun vector(index: Int, callback: () -> FloatArray) {
+        statement.setBytes(index + 1, callback.invoke().toByteArray())
         rowAdded = false
     }
 

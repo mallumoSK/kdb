@@ -8,6 +8,7 @@ import kotlinx.datetime.LocalTime
 import kotlinx.datetime.toKotlinLocalDate
 import kotlinx.datetime.toKotlinLocalDateTime
 import kotlinx.datetime.toKotlinLocalTime
+import tk.mallumo.kdb.toFloatArray
 import java.io.*
 import java.sql.*
 import java.util.*
@@ -85,6 +86,14 @@ actual open class Cursor(val query: ResultSet, val isSqlite: Boolean) : Closeabl
         runCatching {
             query.getDouble(index + 1).also {
                 callback.invoke(it)
+            }
+        }.onFailure { it.printStackTrace() }
+    }
+
+    actual open fun vector(index: Int, callback: (FloatArray) -> Unit) {
+        runCatching {
+            query.getBytes(index + 1).also {
+                callback.invoke(it.toFloatArray())
             }
         }.onFailure { it.printStackTrace() }
     }

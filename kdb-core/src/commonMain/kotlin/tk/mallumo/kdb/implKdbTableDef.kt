@@ -10,7 +10,8 @@ class ImplKdbTableDef(
 
     fun getUnique(): List<String> = columns.filter { it.unique }.map { it.name }
 
-    fun getIndexes(): List<IndexedField> = columns.filter { it.index }.map { IndexedField(it.name, it.type) }
+    fun getIndexes(): List<IndexedField> =
+        columns.filter { it.index }.map { IndexedField(it.name, it.type) }
 
     override fun toString(): String {
         return "$name;${columns.joinToString(";") { it.toString() }}"
@@ -35,6 +36,7 @@ class ImplKdbTableDef(
 
         data object UNDEFINED : ColumnType("UNDEFINED")
         data object TEXT : ColumnType("TEXT")
+        data object VECTOR : ColumnType("VECTOR")
 
         data object NUMERIC : ColumnType("NUMERIC")
         data object INTEGER : ColumnType("INTEGER")
@@ -44,18 +46,20 @@ class ImplKdbTableDef(
         data object DATE : ColumnType("DATE")
         data object DATETIME : ColumnType("DATETIME")
 
-        companion object{
+        companion object {
             private val all by lazy {
                 listOf(
                     UNDEFINED, TEXT,
                     NUMERIC, INTEGER, BIGINT,
-                    TIME, DATE, DATETIME
+                    TIME, DATE, DATETIME, VECTOR
                 )
             }
+
             operator fun get(name: String): ColumnType {
                 return all.first { it.name == name }
             }
         }
+
         override fun toString(): String = name
     }
 }
@@ -69,6 +73,14 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
                 else {
                     if (isSqlite) append(type)
                     else append("TEXT")
+                }
+            }
+
+            ImplKdbTableDef.ColumnType.VECTOR -> {
+                if (size > 0) append("VECTOR(${size})")
+                else {
+                    if (isSqlite) append("TEXT")
+                    else append("VECTOR(1)")
                 }
             }
 
@@ -88,8 +100,8 @@ fun ImplKdbTableDef.Item.sqlCreator(isSqlite: Boolean): String {
 
             ImplKdbTableDef.ColumnType.DATE,
             ImplKdbTableDef.ColumnType.DATETIME,
-            ImplKdbTableDef.ColumnType.TIME ->{
-                if(isSqlite) append("TEXT")
+            ImplKdbTableDef.ColumnType.TIME -> {
+                if (isSqlite) append("TEXT")
                 else append(type)
             }
 
@@ -124,10 +136,10 @@ fun ImplKdbTableDef.sqlCreator(redeclareType: Boolean = false, isSqlite: Boolean
         getUnique().also { cols ->
             if (cols.isNotEmpty()) {
                 if (isSqlite) {
-                    append(",\nUNIQUE (${cols.joinToString(","){"`$it`"}})")
+                    append(",\nUNIQUE (${cols.joinToString(",") { "`$it`" }})")
                     append(" ON CONFLICT REPLACE")
                 } else {
-                    append(",\nUNIQUE KEY `UNIQUE_ID` (${cols.joinToString(","){"`$it`"}})")
+                    append(",\nUNIQUE KEY `UNIQUE_ID` (${cols.joinToString(",") { "`$it`" }})")
                 }
             }
         }
@@ -170,7 +182,10 @@ where TABLE_SCHEMA = database();
 --CREATE INDEX I_FLOOR_ROUTE_ID ON FLOOR_ROUTE(ID); //TEXTINT
 
  */
-fun ImplKdbTableDef.applyIndexes(isSqlite: Boolean, currentIndexes: MutableList<String>): MutableList<String> {
+fun ImplKdbTableDef.applyIndexes(
+    isSqlite: Boolean,
+    currentIndexes: MutableList<String>
+): MutableList<String> {
     val newIndexes = getIndexes()
         .filter { indexedField -> columns.any { tableField -> tableField.name == indexedField.name } }
 

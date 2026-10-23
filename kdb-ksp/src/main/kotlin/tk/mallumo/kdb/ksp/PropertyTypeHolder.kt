@@ -26,12 +26,13 @@ data class PropertyTypeHolder(
         /**
          * object types which Bundle supports directly
          */
-         val typeToSqlTypeMap = mapOf(
+        val typeToSqlTypeMap = mapOf(
             "kotlin.Double" to "NUMERIC",
             "kotlin.Float" to "NUMERIC",
             "kotlin.Int" to "INTEGER",
             "kotlin.Long" to "BIGINT",
             "kotlin.String" to "TEXT",
+            "kotlin.FloatArray" to "VECTOR",
 
             "kotlinx.datetime.LocalTime" to "TIME",
             "kotlin.datetime.LocalTime" to "TIME",
@@ -39,7 +40,6 @@ data class PropertyTypeHolder(
             "kotlinx.datetime.LocalDate" to "DATE",
             "kotlin.datetime.LocalDate" to "DATE",
 
-            "kotlinx.datetime.LocalDateTime" to "DATETIME",
             "kotlinx.datetime.LocalDateTime" to "DATETIME"
         )
 
@@ -62,19 +62,10 @@ data class PropertyTypeHolder(
                 "LocalTime" -> "time"
                 "LocalDate" -> "date"
                 "LocalDateTime" -> "dateTime"
+                "FloatArray" -> "vector"
                 else -> simpleTypeName.lowercase()
             }
 
-            val defaultValue = when (sqlColumnTypeName) {
-                "TEXT",
-                "TIME",
-                "DATE",
-                "DATETIME" ->"\"'${'$'}{instance.$name}'\""
-                else -> "instance.${name}.toString()"
-            }
-
-            val isUnique = prop.annotations.any { it.shortName.asString() == "KdbColumnUnique" }
-            val isIndex = prop.annotations.any { it.shortName.asString() == "KdbColumnIndex" }
             val columnSize = prop.annotations
                 .firstOrNull { it.shortName.asString() == "KdbColumnSize" }
                 ?.arguments
@@ -83,6 +74,23 @@ data class PropertyTypeHolder(
                 ?.toString()
                 ?.toIntOrNull()
                 ?: 0
+
+            val defaultValue = when (sqlColumnTypeName) {
+                "TEXT",
+                "TIME",
+                "DATE",
+                "DATETIME" -> "\"'${'$'}{instance.$name}'\""
+
+                "VECTOR" -> {
+                    val zeros = (1..columnSize).joinToString(", ") { "0.0" }
+                    "\"(VEC_FromText('[$zeros]'))\""
+                }
+
+                else -> "instance.${name}.toString()"
+            }
+
+            val isUnique = prop.annotations.any { it.shortName.asString() == "KdbColumnUnique" }
+            val isIndex = prop.annotations.any { it.shortName.asString() == "KdbColumnIndex" }
 
             return when (typeName) {
                 in typeToSqlTypeMap.keys -> {

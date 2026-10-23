@@ -21,9 +21,11 @@ open class TEST_TABLE(
     var item_int: Int = 0,
     var item_long: Long = 0,
     var a: String = "",
+    @KdbColumnSize(10)
+    var item_FloatArray: FloatArray = FloatArray(10),
 
-    var item_time: LocalTime = LocalTime(1,2,3, 4),
-    var item_date: LocalDate = LocalDate(5,6,7),
+    var item_time: LocalTime = LocalTime(1, 2, 3, 4),
+    var item_date: LocalDate = LocalDate(5, 6, 7),
     var item_datetime: LocalDateTime = LocalDateTime(item_date, item_time),
 )
 

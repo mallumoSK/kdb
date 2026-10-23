@@ -6,14 +6,13 @@ import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
-    alias(libs.plugins.android.library)
 //    alias(libs.plugins.android.lib)
     id("maven-publish")
 }
 
 val current = libs.me.kdb.core.get()
 
-group = current.group.toString()
+group = current.group
 version = current.version!!
 
 
@@ -30,19 +29,19 @@ kotlin {
 //        publishLibraryVariants("release")
 //        publishLibraryVariantsGroupedByFlavor = true
 //    }
-    android {
-        namespace = current.group.toString()
-        compileSdk = libs.versions.android.sdk.compile.get().toInt()
-        minSdk = libs.versions.android.sdk.min.get().toInt()
-    }
+//    android {
+//        namespace = current.group.toString()
+//        compileSdk = libs.versions.android.sdk.compile.get().toInt()
+//        minSdk = libs.versions.android.sdk.min.get().toInt()
+//    }
     sourceSets {
         commonMain.dependencies {
             api(libs.kotlin.coroutines)
             api(libs.kotlin.datetime)
         }
-        androidMain.dependencies {
-            implementation(libs.sqlite.bundled)
-        }
+//        androidMain.dependencies {
+//            implementation(libs.sqlite.bundled)
+//        }
     }
 }
 

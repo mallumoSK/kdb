@@ -43,7 +43,7 @@ actual open class DbEngine(
 
     actual suspend fun connection(body: suspend DatabaseConnector.() -> Unit) {
         lock.withLock {
-            body(connection as DatabaseConnector)
+            body(connection)
         }
     }
 

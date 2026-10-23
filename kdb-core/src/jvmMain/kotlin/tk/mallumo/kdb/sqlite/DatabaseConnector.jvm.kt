@@ -2,4 +2,4 @@ package tk.mallumo.kdb.sqlite
 
 import java.sql.Connection
 
-actual interface DatabaseConnector : Connection
+actual typealias DatabaseConnector = Connection

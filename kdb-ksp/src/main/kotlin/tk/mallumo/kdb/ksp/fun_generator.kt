@@ -100,11 +100,13 @@ fun generateFillFunctions(
                 "kotlinx.datetime.LocalTime",
                 "kotlin.datetime.LocalTime" -> "\t\t\tif (indexArray[$index] != -1) cursor.time(indexArray[$index]) { ${property.propertyName} = it }"
 
+                "kotlin.FloatArray" -> "\t\t\tif (indexArray[$index] != -1) cursor.vector(indexArray[$index]) { ${property.propertyName} = it }"
                 "kotlinx.datetime.LocalDate",
                 "kotlin.datetime.LocalDate" -> "\t\t\tif (indexArray[$index] != -1) cursor.date(indexArray[$index]) { ${property.propertyName} = it }"
 
                 "kotlinx.datetime.LocalDateTime",
                 "kotlin.datetime.LocalDateTime" -> "\t\t\tif (indexArray[$index] != -1) cursor.dateTime(indexArray[$index]) { ${property.propertyName} = it }"
+
                 else -> " /*unknown field type '${property.qualifiedName}' of property '${property.propertyName}'*/"
             }
         }.joinToString("\n")
@@ -187,15 +189,15 @@ fun generateInsertFunctions(
         }.joinToString("\n", prefix = "\n", postfix = "\n")
 
         val suffixStatement = buildString {
-            if(columnNamesAreUnique.count() == 0){
+            if (columnNamesAreUnique.count() == 0) {
                 append("val sufix =\"\"")
-            }else{
+            } else {
                 append("val sufix = if(db.isSqlite) \"\"")
                 appendLine()
                 append("\t\telse \" ON DUPLICATE KEY UPDATE ")
-                if(columnNamesNotUnique.count()==0){
+                if (columnNamesNotUnique.count() == 0) {
                     append(columnNamesAreUnique.joinToString(",") { "${it}=VALUES($it)" })
-                }else{
+                } else {
                     append(columnNamesNotUnique.joinToString(",") { "${it}=VALUES($it)" })
                 }
                 append("\"")

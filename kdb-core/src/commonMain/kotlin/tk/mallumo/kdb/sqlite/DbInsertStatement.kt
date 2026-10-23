@@ -14,6 +14,7 @@ expect open class DbInsertStatement(db: DbEngine) {
     open fun int(index: Int, callback: () -> Int)
     open fun long(index: Int, callback: () -> Long)
     open fun double(index: Int, callback: () -> Double)
+    open fun vector(index: Int, callback: () -> FloatArray)
 
     open fun time(index: Int, callback: () -> LocalTime)
     open fun date(index: Int, callback: () -> LocalDate)
