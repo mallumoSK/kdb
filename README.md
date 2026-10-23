@@ -7,9 +7,8 @@
 ```bash
 clear && tools/commit-llama.sh  "$(pwd)"
 ```
-
 ```bash
-clear && tools/commit-llama.sh  "$(pwd)"
+clear && tools/commit-report-llama-ui.sh "$(pwd)"
 ```
 
 * High-performance, lightweight database wrapper and ORM for Kotlin Multiplatform (JVM / Desktop /
