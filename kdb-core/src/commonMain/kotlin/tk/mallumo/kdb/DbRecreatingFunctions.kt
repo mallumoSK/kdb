@@ -9,7 +9,7 @@ internal object DbRecreatingFunctions {
         "NAME_TABLE, NAME_COLUMN, TYPE, DEFAULT_VALUE, IS_UNIQUE, IS_INDEXED, SIZE"
 
     private const val dbDefColumnsCreator =
-        "NAME_TABLE VARCHAR(128), NAME_COLUMN VARCHAR(128), TYPE VARCHAR(128), DEFAULT_VALUE VARCHAR(128), IS_UNIQUE INT, IS_INDEXED INT, SIZE INT DEFAULT '0'"
+        "NAME_TABLE VARCHAR(128), NAME_COLUMN VARCHAR(128), TYPE VARCHAR(128), DEFAULT_VALUE TEXT, IS_UNIQUE INT, IS_INDEXED INT, SIZE INT DEFAULT '0'"
 
     private const val dbDefColumnsReplacement =
         """
@@ -133,52 +133,53 @@ internal object DbRecreatingFunctions {
     }
 
 
-    private suspend fun writeNewDbDef(db: DbEngine, dbDefArray: MutableList<ImplKdbTableDef>) = coroutineScope {
+    private suspend fun writeNewDbDef(db: DbEngine, dbDefArray: MutableList<ImplKdbTableDef>) =
+        coroutineScope {
 
-        db.exec(
-            """
+            db.exec(
+                """
             CREATE TABLE IF NOT EXISTS $dbDefTable (
                         ${if (db.isSqlite) dbDefColumns else dbDefColumnsCreator}, 
                 UNIQUE (NAME_TABLE, NAME_COLUMN)
                         ${if (db.isSqlite) "ON CONFLICT REPLACE" else ""})
         """.trimIndent()
-        )
+            )
 
-        db.insert(
-            """
+            db.insert(
+                """
             INSERT INTO $dbDefTable (${dbDefColumns})
             VALUES (?,?,?,?,?,?,?)
             ${if (db.isSqlite) "" else " ON DUPLICATE KEY UPDATE $dbDefColumnsReplacement"}
         """.trimIndent()
-        ) {
-            dbDefArray.forEach { def ->
-                def.columns.forEach { column ->
-                    it.string(0) { def.name }
-                    it.string(1) { column.name }
-                    it.string(2) { column.type.toString() }
-                    it.string(3) { column.defaultValue }
-                    it.int(4) { if (column.unique) 1 else 0 }
-                    it.int(5) { if (column.index) 1 else 0 }
-                    it.int(6) { column.size }
-                    it.add()
+            ) {
+                dbDefArray.forEach { def ->
+                    def.columns.forEach { column ->
+                        it.string(0) { def.name }
+                        it.string(1) { column.name }
+                        it.string(2) { column.type.toString() }
+                        it.string(3) { column.defaultValue }
+                        it.int(4) { if (column.unique) 1 else 0 }
+                        it.int(5) { if (column.index) 1 else 0 }
+                        it.int(6) { column.size }
+                        it.add()
+                    }
                 }
+                it.commit()
             }
-            it.commit()
+            val podm =
+                dbDefArray.map { table -> table.columns.map { column -> "'${table.name}-${column.name}'" } }
+                    .joinToString(",") { it.joinToString(",") }
+
+            val concatWhere = if (db.isSqlite) " (NAME_TABLE || '-' || NAME_COLUMN) "
+            else " CONCAT(NAME_TABLE, '-', NAME_COLUMN) "
+
+            db.exec("DELETE FROM $dbDefTable WHERE $concatWhere NOT IN ($podm)")
         }
-        val podm =
-            dbDefArray.map { table -> table.columns.map { column -> "'${table.name}-${column.name}'" } }
-                .joinToString(",") { it.joinToString(",") }
-
-        val concatWhere = if (db.isSqlite) " (NAME_TABLE || '-' || NAME_COLUMN) "
-        else " CONCAT(NAME_TABLE, '-', NAME_COLUMN) "
-
-        db.exec("DELETE FROM $dbDefTable WHERE $concatWhere NOT IN ($podm)")
-    }
 
     private suspend fun readOldDefDirect(db: DbEngine): List<ImplKdbTableDef>? = coroutineScope {
         val map = HashMap<String, ImplKdbTableDef>()
 
-       suspend  fun readTableData() {
+        suspend fun readTableData() {
             db.query(
                 """
            SELECT $dbDefColumns
