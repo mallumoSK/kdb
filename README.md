@@ -1,12 +1,13 @@
 # kdb
 
-## KDB-CORE: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmallumo%2Fpublic%2Ftk%2Fmallumo%2Fkdb-core%2Fmaven-metadata.xml)
+## KDB-CORE: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fuser42380946%2Fmaven%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml)
 
-## KDB-KSP: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fmvn%2Fmallumo%2Fpublic%2Ftk%2Fmallumo%2Fkdb-ksp%2Fmaven-metadata.xml)
+## KDB-CORE: ![Maven metadata URL](https://img.shields.io/maven-metadata/v?metadataUrl=https%3A%2F%2Frepo.repsy.io%2Fuser42380946%2Fmaven%2Ftk%2Fmallumo%2Fkdb-core%2Fmaven-metadata.xml)
 
 ```bash
 clear && tools/commit-llama.sh  "$(pwd)"
 ```
+
 ```bash
 clear && tools/commit-report-llama-ui.sh "$(pwd)"
 ```
@@ -73,8 +74,8 @@ clear && tools/commit-report-llama-ui.sh "$(pwd)"
 
 * `@KdbColumnIndex`: Creates an index on the column.
 * `@KdbColumnUnique`: Adds a `UNIQUE` constraint to the column.
-* `@KdbColumnSize(size = ...)`: Specifies column length (e.g. `VARCHAR(256)`) or vector dimension (
-  e.g. `VECTOR(10)`).
+* `@KdbColumnSize(size = ...)`: Specifies column length (e.g. `VARCHAR(256)`) or vector dimension
+  (e.g. `VECTOR(10)`).
 
 ---
 
@@ -237,7 +238,7 @@ Add the repository and dependencies to your project:
 ```kotlin
 repositories {
     mavenCentral()
-    maven("https://repo.repsy.io/mvn/mallumo/public")
+    maven("https://repo.repsy.io/user42380946/maven")
 }
 ```
 
