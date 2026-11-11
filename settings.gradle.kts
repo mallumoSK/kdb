@@ -12,7 +12,7 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
-        maven("https://repo.repsy.io/mvn/mallumo/public")
+        maven("https://repo.repsy.io/user42380946/maven")
     }
 }
 
@@ -29,7 +29,7 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
-        maven("https://repo.repsy.io/mvn/mallumo/public")
+        maven("https://repo.repsy.io/user42380946/maven")
     }
 }
 

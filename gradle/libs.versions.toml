@@ -1,25 +1,23 @@
 [versions]
-kotlin_core = "2.3.10"
-kotlin_ksp = "2.3.6"
-kotlin_datetime = "0.7.1"
-kotlin_coroutines = "1.10.2"
-android_agp = "9.1.0"
-android_sdk_compile = "36"
-android_sdk_min = "26"
+kotlin_core = "2.4.21"
+kotlin_ksp = "2.3.13"
+kotlin_datetime = "0.8.0"
+kotlin_coroutines = "1.11.0"
+android_agp = "9.1.1"
 android_sqlite = "2.6.2"
 #
 kdb_sqlite = "3.39.3.0"
 kdb_mysql = "8.0.33"
 kdb_mariadb = "3.5.7"
 #
-me_kdb_core = "2.3.6-2.3.10-1.5.4"
-me_kdb_ksp = "2.3.6-2.3.10-1.5.4"
+me_kdb_core = "2.4.21-2.3.13-1.5.4"
+me_kdb_ksp = "2.4.21-2.3.13-1.5.4"
 
 #
 android-minSdk = "21"
-android-targetSdk = "34"
+android-compileSdk = "37"
 #
-androidx_core = "1.13.1"
+androidx_core = "1.18.0"
 #
 [libraries]
 #
